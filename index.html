@@ -4,67 +4,279 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Photo Promo Generator | Pocket Cinema</title>
-
   <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0b0b0f;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
+    :root{
+      --bg:#0b0b0f; --panel:#12121a; --panel2:#171726;
+      --text:#fff; --muted:#b5b5c0; --line:#26263a;
+      --accent:#6d6dff; --accent2:#8a5cff;
     }
-
-    .container {
-      max-width: 420px;
-      padding: 24px;
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:radial-gradient(1200px 700px at 20% 10%, rgba(109,109,255,.18), transparent 55%),
+                 radial-gradient(1000px 700px at 80% 20%, rgba(138,92,255,.14), transparent 60%),
+                 var(--bg);
+      color:var(--text); min-height:100vh;
     }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
+    .wrap{max-width:980px; margin:0 auto; padding:22px 16px 40px;}
+    .top{
+      display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+      padding:14px 14px; border:1px solid var(--line); border-radius:14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      backdrop-filter: blur(6px);
     }
-
-    p {
-      color: #b5b5c0;
-      margin-bottom: 1.5rem;
+    .brand h1{margin:0; font-size:1.1rem; letter-spacing:.2px;}
+    .brand p{margin:.35rem 0 0; color:var(--muted); font-size:.9rem; line-height:1.25;}
+    .pill{
+      border:1px solid var(--line); color:var(--muted); padding:8px 10px;
+      border-radius:999px; font-size:.82rem; background:rgba(0,0,0,.18);
+      display:flex; gap:8px; align-items:center;
     }
-
-    .button {
-      display: inline-block;
-      padding: 14px 20px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #7c7cff, #5f5fff);
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
+    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
+    @media(min-width:900px){ .grid{grid-template-columns:1fr 1fr;} }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line); border-radius:14px; padding:14px;
     }
-
-    .footer {
-      margin-top: 2rem;
-      font-size: 0.8rem;
-      color: #777;
+    .card h2{margin:0 0 10px; font-size:1rem;}
+    label{display:block; font-size:.85rem; color:var(--muted); margin:10px 0 6px;}
+    input, select, textarea{
+      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
+      background:rgba(0,0,0,.22); color:var(--text); outline:none;
     }
+    textarea{min-height:90px; resize:vertical;}
+    .row{display:grid; grid-template-columns:1fr; gap:10px;}
+    @media(min-width:520px){ .row{grid-template-columns:1fr 1fr;} }
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    button{
+      border:none; border-radius:12px; padding:12px 12px; font-weight:700;
+      color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent2));
+      cursor:pointer;
+    }
+    button.secondary{
+      background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
+    }
+    .out{
+      white-space:pre-wrap; word-wrap:break-word; line-height:1.35;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.18);
+      padding:12px; border-radius:12px; min-height:180px;
+    }
+    .hint{color:var(--muted); font-size:.85rem; margin-top:8px; line-height:1.35;}
+    .ok{color:#a6ffcf}
+    .warn{color:#ffd38a}
+    .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>AI Photo Promo Generator</h1>
-    <p>
-      A Pocket Cinema tool for creating high-impact, cinematic AI photo prompts.
-    </p>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>AI Photo Promo Generator</h1>
+        <p>Pocket Cinema tool — build clean, cinematic prompt blocks for image models.</p>
+      </div>
+      <div class="pill">
+        <span>Live:</span>
+        <strong>nhp2media-svg.github.io</strong>
+      </div>
+    </div>
 
-    <a class="button" href="#">
-      Launch Generator (Coming Soon)
-    </a>
+    <div class="grid">
+      <div class="card">
+        <h2>Inputs</h2>
 
-    <div class="footer">
-      © Pocket Cinema / NHP2 Media
+        <label>Goal</label>
+        <select id="goal">
+          <option value="promo">Promo / Poster</option>
+          <option value="product">Product / E-commerce</option>
+          <option value="thumbnail">YouTube Thumbnail</option>
+          <option value="editorial">Editorial / Paparazzi</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label>Subject</label>
+            <input id="subject" placeholder="e.g., a creator holding a camera, a slime product, a musician" />
+          </div>
+          <div>
+            <label>Vibe</label>
+            <select id="vibe">
+              <option value="cinematic">Cinematic</option>
+              <option value="futuristic-minimal">Futuristic Minimal</option>
+              <option value="luxury">Luxury / High-end</option>
+              <option value="gritty">Gritty / Street</option>
+              <option value="dreamy">Dreamy / Soft</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Lighting</label>
+            <select id="lighting">
+              <option value="softbox">Softbox studio, clean highlights</option>
+              <option value="flash">Flash-lit paparazzi, crisp speculars</option>
+              <option value="golden">Golden hour, warm rim light</option>
+              <option value="neon">Neon accents, high contrast</option>
+              <option value="moody">Moody low-key, dramatic shadows</option>
+            </select>
+          </div>
+          <div>
+            <label>Camera / Lens</label>
+            <select id="lens">
+              <option value="35mm">35mm documentary</option>
+              <option value="50mm">50mm portrait</option>
+              <option value="85mm">85mm compression</option>
+              <option value="24mm">24mm wide hero shot</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Setting / Background</label>
+        <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
+
+        <label>Key details (what must appear)</label>
+        <textarea id="details" placeholder="Logos, colors, clothing, props, text placement, mood notes…"></textarea>
+
+        <div class="row">
+          <div>
+            <label>Aspect Ratio</label>
+            <select id="ar">
+              <option value="1:1">1:1 (Square)</option>
+              <option value="4:5">4:5 (IG Post)</option>
+              <option value="9:16">9:16 (Story/Reel)</option>
+              <option value="16:9">16:9 (YouTube)</option>
+            </select>
+          </div>
+          <div>
+            <label>Quality</label>
+            <select id="quality">
+              <option value="ultra">Ultra-detailed, realistic texture</option>
+              <option value="clean">Clean, polished, minimal grain</option>
+              <option value="film">Film grain, editorial realism</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Text overlay (optional)</label>
+        <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
+
+        <div class="btns">
+          <button id="gen">Generate Prompt</button>
+          <button class="secondary" id="copy">Copy</button>
+          <button class="secondary" id="clear">Clear</button>
+        </div>
+
+        <div class="tiny">
+          Tip: Keep it factual. Avoid naming real people you don’t have rights to. Use “a person” unless it’s you/your brand assets.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Output</h2>
+        <div id="output" class="out">Fill the inputs and tap “Generate Prompt”.</div>
+        <div id="status" class="hint"></div>
+        <div class="hint">
+          <span class="ok">✓</span> Works on your live site instantly after commit.  
+          <span class="warn">⚠</span> If your model has strict word limits, tell me which one and I’ll add a “120-word” mode.
+        </div>
+      </div>
     </div>
   </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function humanizeLighting(v){
+      return ({
+        softbox: "studio softbox lighting with clean highlights, smooth falloff",
+        flash: "flash-lit paparazzi lighting, crisp specular highlights, candid realism",
+        golden: "golden hour lighting, warm rim light, soft sun flare",
+        neon: "neon accent lighting, high contrast, glossy reflections",
+        moody: "moody low-key lighting, dramatic shadows, cinematic contrast"
+      })[v] || v;
+    }
+
+    function humanizeVibe(v){
+      return ({
+        cinematic: "cinematic, high-end, dramatic composition",
+        "futuristic-minimal": "futuristic minimalist aesthetic, clean geometry, sleek styling",
+        luxury: "luxury editorial look, premium materials, upscale mood",
+        gritty: "gritty documentary realism, street texture, raw energy",
+        dreamy: "dreamy soft aesthetic, gentle highlights, airy atmosphere"
+      })[v] || v;
+    }
+
+    function humanizeQuality(v){
+      return ({
+        ultra: "ultra-detailed realism, lifelike textures (skin, fabric, metal), high clarity",
+        clean: "clean polished look, crisp edges, minimal artifacts",
+        film: "editorial film realism, subtle grain, natural imperfections"
+      })[v] || v;
+    }
+
+    function buildPrompt(){
+      const goal = $("goal").value;
+      const subject = $("subject").value.trim() || "a subject";
+      const vibe = humanizeVibe($("vibe").value);
+      const lighting = humanizeLighting($("lighting").value);
+      const lens = $("lens").value;
+      const setting = $("setting").value.trim() || "a fitting environment";
+      const details = $("details").value.trim();
+      const ar = $("ar").value;
+      const quality = humanizeQuality($("quality").value);
+      const overlay = $("overlay").value.trim();
+
+      const goalLine = ({
+        promo: "Create a promotional hero image / poster key art.",
+        product: "Create a product-focused hero image for e-commerce.",
+        thumbnail: "Create a bold YouTube thumbnail-style hero image.",
+        editorial: "Create an editorial candid paparazzi-style image."
+      })[goal] || "Create a hero image.";
+
+      let prompt = [];
+      prompt.push(goalLine);
+      prompt.push(`Subject: ${subject}.`);
+      prompt.push(`Style: ${vibe}.`);
+      prompt.push(`Setting: ${setting}.`);
+      prompt.push(`Lighting: ${lighting}.`);
+      prompt.push(`Camera: ${lens} lens, sharp focus, strong depth, clean composition.`);
+      prompt.push(`Quality: ${quality}.`);
+      prompt.push(`Aspect ratio: ${ar}.`);
+
+      if(details) prompt.push(`Must include: ${details}.`);
+      if(overlay) prompt.push(`Text overlay: ${overlay}.`);
+      prompt.push(`Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.`);
+
+      return prompt.join("\n");
+    }
+
+    function wordCount(text){
+      return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
+    $("gen").addEventListener("click", () => {
+      const text = buildPrompt();
+      $("output").textContent = text;
+      const wc = wordCount(text);
+      $("status").innerHTML = `Word count: <strong>${wc}</strong>`;
+    });
+
+    $("copy").addEventListener("click", async () => {
+      const text = $("output").textContent;
+      try{
+        await navigator.clipboard.writeText(text);
+        $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
+      }catch(e){
+        $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.`;
+      }
+    });
+
+    $("clear").addEventListener("click", () => {
+      ["subject","setting","details","overlay"].forEach(id => $(id).value = "");
+      $("output").textContent = "Fill the inputs and tap “Generate Prompt”.";
+      $("status").textContent = "";
+    });
+  </script>
 </body>
 </html>
