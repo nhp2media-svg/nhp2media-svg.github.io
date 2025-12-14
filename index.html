@@ -6,22 +6,24 @@
   <title>AI Photo Promo Generator | Pocket Cinema</title>
   <style>
     :root{
-      --bg:#0b0b0f; --panel:#12121a; --panel2:#171726;
-      --text:#fff; --muted:#b5b5c0; --line:#26263a;
+      --bg:#0b0b0f; --text:#fff; --muted:#b5b5c0; --line:#26263a;
       --accent:#6d6dff; --accent2:#8a5cff;
+      --ok:#a6ffcf; --warn:#ffd38a;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      background:radial-gradient(1200px 700px at 20% 10%, rgba(109,109,255,.18), transparent 55%),
-                 radial-gradient(1000px 700px at 80% 20%, rgba(138,92,255,.14), transparent 60%),
-                 var(--bg);
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(109,109,255,.18), transparent 55%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(138,92,255,.14), transparent 60%),
+        var(--bg);
       color:var(--text); min-height:100vh;
     }
-    .wrap{max-width:980px; margin:0 auto; padding:22px 16px 40px;}
+    .wrap{max-width:1100px; margin:0 auto; padding:22px 16px 40px;}
     .top{
       display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
-      padding:14px 14px; border:1px solid var(--line); border-radius:14px;
+      padding:14px; border:1px solid var(--line); border-radius:14px;
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       backdrop-filter: blur(6px);
     }
@@ -32,21 +34,26 @@
       border-radius:999px; font-size:.82rem; background:rgba(0,0,0,.18);
       display:flex; gap:8px; align-items:center;
     }
+
     .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
-    @media(min-width:900px){ .grid{grid-template-columns:1fr 1fr;} }
+    @media(min-width:980px){ .grid{grid-template-columns:1fr 1fr;} }
+
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       border:1px solid var(--line); border-radius:14px; padding:14px;
     }
     .card h2{margin:0 0 10px; font-size:1rem;}
+
     label{display:block; font-size:.85rem; color:var(--muted); margin:10px 0 6px;}
     input, select, textarea{
       width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
       background:rgba(0,0,0,.22); color:var(--text); outline:none;
     }
-    textarea{min-height:90px; resize:vertical;}
+    textarea{min-height:92px; resize:vertical;}
+
     .row{display:grid; grid-template-columns:1fr; gap:10px;}
     @media(min-width:520px){ .row{grid-template-columns:1fr 1fr;} }
+
     .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
     button{
       border:none; border-radius:12px; padding:12px 12px; font-weight:700;
@@ -56,34 +63,143 @@
     button.secondary{
       background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
     }
+
     .out{
       white-space:pre-wrap; word-wrap:break-word; line-height:1.35;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.18);
-      padding:12px; border-radius:12px; min-height:180px;
+      padding:12px; border-radius:12px; min-height:260px;
     }
     .hint{color:var(--muted); font-size:.85rem; margin-top:8px; line-height:1.35;}
-    .ok{color:#a6ffcf}
-    .warn{color:#ffd38a}
+    .ok{color:var(--ok)}
+    .warn{color:var(--warn)}
     .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
+
+    .switchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;}
+    .chip{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:.82rem;
+      display:flex; align-items:center; gap:8px;
+    }
+    .chip input{width:auto; padding:0; margin:0;}
+
+    .imgGrid{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+    @media(min-width:520px){ .imgGrid{grid-template-columns:repeat(3, 1fr);} }
+    .imgCard{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      padding:10px;
+      background:rgba(0,0,0,.20);
+    }
+    .imgTop{
+      display:flex; gap:10px; align-items:flex-start;
+    }
+    .thumb{
+      width:72px; height:72px; object-fit:cover;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .imgMeta{flex:1; min-width:0;}
+    .imgName{font-size:.80rem; color:var(--muted); margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .miniLabel{margin:0 0 6px; font-size:.78rem; color:var(--muted);}
+    .miniInput{
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      color:#fff;
+      margin-bottom:8px;
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="top">
       <div class="brand">
         <h1>AI Photo Promo Generator</h1>
-        <p>Pocket Cinema tool — build clean, cinematic prompt blocks for image models.</p>
+        <p>Pocket Cinema tool — multi-platform prompt blocks + reference image pack (1–10).</p>
       </div>
-      <div class="pill">
-        <span>Live:</span>
-        <strong>nhp2media-svg.github.io</strong>
-      </div>
+      <div class="pill"><span>Live:</span><strong>nhp2media-svg.github.io</strong></div>
     </div>
 
     <div class="grid">
       <div class="card">
         <h2>Inputs</h2>
+
+        <label>Platform</label>
+        <select id="platform">
+          <option value="gemini">Gemini (nano-banana)</option>
+          <option value="grok">Grok</option>
+          <option value="sora2">Sora 2</option>
+          <option value="meta">Meta AI</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="lmarena">LM Arena</option>
+          <option value="capcut">CapCut</option>
+        </select>
+
+        <!-- LM Arena settings -->
+        <div id="lmaWrap" style="display:none; margin-top:10px;">
+          <label>LM Arena mode</label>
+          <select id="lmaMode">
+            <option value="battle">Battle (unknown model)</option>
+            <option value="direct">Direct (choose model)</option>
+          </select>
+
+          <div id="lmaDirectOnly" style="display:none;">
+            <label>Curated image models (optional)</label>
+            <select id="lmaModelPick">
+              <option value="">(optional) Choose…</option>
+              <optgroup label="Google / Gemini / Imagen">
+                <option>gemini-2.5-flash-image-preview (nano-banana)</option>
+                <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
+                <option>imagen-4.0-generate-preview-06-06</option>
+                <option>imagen-4.0-ultra-generate-preview-06-06</option>
+              </optgroup>
+              <optgroup label="OpenAI / Microsoft">
+                <option>gpt-image-1</option>
+                <option>gpt-image-1-mini</option>
+                <option>dall-e-3</option>
+                <option>mai-image-1</option>
+              </optgroup>
+              <optgroup label="FLUX / Other">
+                <option>flux-2-pro</option>
+                <option>flux-2-dev</option>
+                <option>flux-2-flex</option>
+                <option>ideogram-v3-quality</option>
+                <option>stable-diffusion-v35-large</option>
+              </optgroup>
+            </select>
+
+            <label>Manual model override (optional)</label>
+            <input id="lmaManual" placeholder="Type any model name exactly" />
+          </div>
+
+          <div class="tiny">
+            Battle mode stays model-agnostic. Direct mode can add a small header showing the model you picked/typed.
+          </div>
+        </div>
+
+        <div class="switchRow">
+          <label class="chip">
+            <input type="checkbox" id="strict120" />
+            <span>Strict 120-word mode (Sora-friendly)</span>
+          </label>
+          <label class="chip">
+            <input type="checkbox" id="verbose" checked />
+            <span>Verbose details</span>
+          </label>
+        </div>
 
         <label>Goal</label>
         <select id="goal">
@@ -135,8 +251,8 @@
         <label>Setting / Background</label>
         <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
 
-        <label>Key details (what must appear)</label>
-        <textarea id="details" placeholder="Logos, colors, clothing, props, text placement, mood notes…"></textarea>
+        <label>Key details (must appear)</label>
+        <textarea id="details" placeholder="Logos, colors, clothing, props, composition, mood notes…"></textarea>
 
         <div class="row">
           <div>
@@ -161,122 +277,422 @@
         <label>Text overlay (optional)</label>
         <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
 
+        <label>Reference Images (1–10)</label>
+        <input id="imgFiles" type="file" accept="image/*" multiple />
+        <div class="tiny">Upload up to 10 images. Label each image to make the prompt smarter (no paid image analysis here).</div>
+        <div id="imgPreview" class="imgGrid"></div>
+
         <div class="btns">
-          <button id="gen">Generate Prompt</button>
+          <button id="gen">Generate</button>
+          <button class="secondary" id="shorten">Shorten</button>
           <button class="secondary" id="copy">Copy</button>
           <button class="secondary" id="clear">Clear</button>
         </div>
 
-        <div class="tiny">
-          Tip: Keep it factual. Avoid naming real people you don’t have rights to. Use “a person” unless it’s you/your brand assets.
-        </div>
+        <div class="tiny">Tip: Use “a person” unless it’s you/your owned assets. Avoid naming real people you don’t have rights to.</div>
       </div>
 
       <div class="card">
         <h2>Output</h2>
-        <div id="output" class="out">Fill the inputs and tap “Generate Prompt”.</div>
+        <div id="output" class="out">Fill the inputs and tap “Generate”.</div>
         <div id="status" class="hint"></div>
         <div class="hint">
-          <span class="ok">✓</span> Works on your live site instantly after commit.  
-          <span class="warn">⚠</span> If your model has strict word limits, tell me which one and I’ll add a “120-word” mode.
+          <span class="ok">✓</span> Works fully client-side (free). Image uploads stay in your browser.
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
+<script>
+  const $ = (id) => document.getElementById(id);
 
-    function humanizeLighting(v){
-      return ({
-        softbox: "studio softbox lighting with clean highlights, smooth falloff",
-        flash: "flash-lit paparazzi lighting, crisp specular highlights, candid realism",
-        golden: "golden hour lighting, warm rim light, soft sun flare",
-        neon: "neon accent lighting, high contrast, glossy reflections",
-        moody: "moody low-key lighting, dramatic shadows, cinematic contrast"
-      })[v] || v;
-    }
+  // ===== Helpers =====
+  function humanizeLighting(v){
+    return ({
+      softbox: "studio softbox lighting with clean highlights, smooth falloff",
+      flash: "flash-lit paparazzi lighting, crisp specular highlights, candid realism",
+      golden: "golden hour lighting, warm rim light, soft sun flare",
+      neon: "neon accent lighting, high contrast, glossy reflections",
+      moody: "moody low-key lighting, dramatic shadows, cinematic contrast"
+    })[v] || v;
+  }
+  function humanizeVibe(v){
+    return ({
+      cinematic: "cinematic, high-end, dramatic composition",
+      "futuristic-minimal": "futuristic minimalist aesthetic, clean geometry, sleek styling",
+      luxury: "luxury editorial look, premium materials, upscale mood",
+      gritty: "gritty documentary realism, street texture, raw energy",
+      dreamy: "dreamy soft aesthetic, gentle highlights, airy atmosphere"
+    })[v] || v;
+  }
+  function humanizeQuality(v){
+    return ({
+      ultra: "ultra-detailed realism, lifelike textures, high clarity",
+      clean: "clean polished look, crisp edges, minimal artifacts",
+      film: "editorial film realism, subtle grain, natural imperfections"
+    })[v] || v;
+  }
+  function wordCount(text){
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  }
 
-    function humanizeVibe(v){
-      return ({
-        cinematic: "cinematic, high-end, dramatic composition",
-        "futuristic-minimal": "futuristic minimalist aesthetic, clean geometry, sleek styling",
-        luxury: "luxury editorial look, premium materials, upscale mood",
-        gritty: "gritty documentary realism, street texture, raw energy",
-        dreamy: "dreamy soft aesthetic, gentle highlights, airy atmosphere"
-      })[v] || v;
-    }
+  // ===== LM Arena UI =====
+  function syncLmArenaUI(){
+    const isLma = $("platform").value === "lmarena";
+    $("lmaWrap").style.display = isLma ? "block" : "none";
+    const direct = $("lmaMode").value === "direct";
+    $("lmaDirectOnly").style.display = (isLma && direct) ? "block" : "none";
+  }
+  $("platform").addEventListener("change", syncLmArenaUI);
+  $("lmaMode").addEventListener("change", syncLmArenaUI);
+  syncLmArenaUI();
 
-    function humanizeQuality(v){
-      return ({
-        ultra: "ultra-detailed realism, lifelike textures (skin, fabric, metal), high clarity",
-        clean: "clean polished look, crisp edges, minimal artifacts",
-        film: "editorial film realism, subtle grain, natural imperfections"
-      })[v] || v;
-    }
+  // ===== Image pack =====
+  let imagePack = []; // {name, dataUrl, role, keep, change}
 
-    function buildPrompt(){
-      const goal = $("goal").value;
-      const subject = $("subject").value.trim() || "a subject";
-      const vibe = humanizeVibe($("vibe").value);
-      const lighting = humanizeLighting($("lighting").value);
-      const lens = $("lens").value;
-      const setting = $("setting").value.trim() || "a fitting environment";
-      const details = $("details").value.trim();
-      const ar = $("ar").value;
-      const quality = humanizeQuality($("quality").value);
-      const overlay = $("overlay").value.trim();
+  function clampImages(files){
+    return Array.from(files || []).slice(0, 10);
+  }
 
-      const goalLine = ({
-        promo: "Create a promotional hero image / poster key art.",
-        product: "Create a product-focused hero image for e-commerce.",
-        thumbnail: "Create a bold YouTube thumbnail-style hero image.",
-        editorial: "Create an editorial candid paparazzi-style image."
-      })[goal] || "Create a hero image.";
+  function renderImagePack(){
+    const wrap = $("imgPreview");
+    wrap.innerHTML = "";
+    imagePack.forEach((img, idx) => {
+      const el = document.createElement("div");
+      el.className = "imgCard";
+      el.innerHTML = `
+        <div class="imgTop">
+          <img class="thumb" src="${img.dataUrl}" alt="img${idx+1}" />
+          <div class="imgMeta">
+            <div class="imgName">Image ${idx+1}: ${escapeHtml(img.name)}</div>
 
-      let prompt = [];
-      prompt.push(goalLine);
-      prompt.push(`Subject: ${subject}.`);
-      prompt.push(`Style: ${vibe}.`);
-      prompt.push(`Setting: ${setting}.`);
-      prompt.push(`Lighting: ${lighting}.`);
-      prompt.push(`Camera: ${lens} lens, sharp focus, strong depth, clean composition.`);
-      prompt.push(`Quality: ${quality}.`);
-      prompt.push(`Aspect ratio: ${ar}.`);
+            <div class="miniLabel">Role</div>
+            <select class="miniInput" data-idx="${idx}" data-field="role">
+              ${roleOption("Primary subject/identity", img.role)}
+              ${roleOption("Wardrobe/texture", img.role)}
+              ${roleOption("Background/location", img.role)}
+              ${roleOption("Lighting/color grade", img.role)}
+              ${roleOption("Style reference", img.role)}
+              ${roleOption("Text/logo reference", img.role)}
+            </select>
 
-      if(details) prompt.push(`Must include: ${details}.`);
-      if(overlay) prompt.push(`Text overlay: ${overlay}.`);
-      prompt.push(`Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.`);
+            <div class="miniLabel">Keep</div>
+            <input class="miniInput" data-idx="${idx}" data-field="keep" value="${escapeHtml(img.keep||"")}" placeholder="What must stay the same?" />
 
-      return prompt.join("\n");
-    }
-
-    function wordCount(text){
-      return text.trim().split(/\s+/).filter(Boolean).length;
-    }
-
-    $("gen").addEventListener("click", () => {
-      const text = buildPrompt();
-      $("output").textContent = text;
-      const wc = wordCount(text);
-      $("status").innerHTML = `Word count: <strong>${wc}</strong>`;
+            <div class="miniLabel">Change</div>
+            <input class="miniInput" data-idx="${idx}" data-field="change" value="${escapeHtml(img.change||"")}" placeholder="What should be different?" />
+          </div>
+        </div>
+      `;
+      wrap.appendChild(el);
     });
 
-    $("copy").addEventListener("click", async () => {
-      const text = $("output").textContent;
-      try{
-        await navigator.clipboard.writeText(text);
-        $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
-      }catch(e){
-        $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.`;
-      }
+    wrap.querySelectorAll("select, input").forEach(node => {
+      node.addEventListener("input", () => {
+        const i = Number(node.getAttribute("data-idx"));
+        const field = node.getAttribute("data-field");
+        imagePack[i][field] = node.value;
+      });
+    });
+  }
+
+  function roleOption(label, current){
+    const selected = (label === current) ? "selected" : "";
+    return `<option ${selected}>${label}</option>`;
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  $("imgFiles").addEventListener("change", async (e) => {
+    const files = clampImages(e.target.files);
+    imagePack = [];
+
+    for(const f of files){
+      const dataUrl = await new Promise((res) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsDataURL(f);
+      });
+      imagePack.push({
+        name: f.name || "image",
+        dataUrl,
+        role: "Primary subject/identity",
+        keep: "",
+        change: ""
+      });
+    }
+    renderImagePack();
+  });
+
+  function buildImageInstructions(platform){
+    if(!imagePack.length) return "";
+
+    const lines = imagePack.map((img, i) => {
+      const keep = img.keep ? ` Keep: ${img.keep}.` : "";
+      const change = img.change ? ` Change: ${img.change}.` : "";
+      return `Image ${i+1} — Role: ${img.role}.${keep}${change}`.trim();
     });
 
-    $("clear").addEventListener("click", () => {
-      ["subject","setting","details","overlay"].forEach(id => $(id).value = "");
-      $("output").textContent = "Fill the inputs and tap “Generate Prompt”.";
-      $("status").textContent = "";
-    });
-  </script>
+    if(platform === "capcut"){
+      return [
+        "Reference Images (CapCut workflow):",
+        "Use Image 1 as the cover/frame reference if applicable.",
+        ...lines
+      ].join("\n");
+    }
+
+    if(platform === "sora2"){
+      return [
+        "Reference Images (Sora 2):",
+        "Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.",
+        ...lines
+      ].join("\n");
+    }
+
+    if(platform === "lmarena"){
+      return [
+        "Reference Images (LM Arena):",
+        "If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.",
+        ...lines
+      ].join("\n");
+    }
+
+    if(platform === "gemini"){
+      return [
+        "Reference Images (Gemini):",
+        "Attach images in order. Use Image 1 as primary subject reference; follow roles below.",
+        ...lines
+      ].join("\n");
+    }
+
+    if(platform === "grok"){
+      return [
+        "Reference Images (Grok):",
+        "Attach images in order. Follow these roles/constraints:",
+        ...lines
+      ].join("\n");
+    }
+
+    if(platform === "meta"){
+      return [
+        "Reference Images (Meta AI):",
+        "Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.",
+        ...lines
+      ].join("\n");
+    }
+
+    // chatgpt default
+    return [
+      "Reference Images:",
+      "Attach images in order. Follow these roles and constraints:",
+      ...lines
+    ].join("\n");
+  }
+
+  // ===== Prompt building =====
+  function baseData(){
+    const platform = $("platform").value;
+    const goal = $("goal").value;
+    const subject = $("subject").value.trim() || "a subject";
+    const vibe = humanizeVibe($("vibe").value);
+    const lighting = humanizeLighting($("lighting").value);
+    const lens = $("lens").value;
+    const setting = $("setting").value.trim() || "a fitting environment";
+    const details = $("details").value.trim();
+    const ar = $("ar").value;
+    const quality = humanizeQuality($("quality").value);
+    const overlay = $("overlay").value.trim();
+    const strict120 = $("strict120").checked;
+    const verbose = $("verbose").checked;
+
+    const goalLine = ({
+      promo: "Create a promotional hero image / poster key art.",
+      product: "Create a product-focused hero image for e-commerce.",
+      thumbnail: "Create a bold YouTube thumbnail-style hero image.",
+      editorial: "Create an editorial candid paparazzi-style image."
+    })[goal] || "Create a hero image.";
+
+    const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
+
+    const lines = [
+      goalLine,
+      `Subject: ${subject}.`,
+      `Style: ${vibe}.`,
+      `Setting: ${setting}.`,
+      `Lighting: ${lighting}.`,
+      verbose ? `Camera: ${lens} lens, sharp focus, strong depth, clean composition.` : `Camera: ${lens} lens.`,
+      `Quality: ${quality}.`,
+      `Aspect ratio: ${ar}.`,
+      details ? `Must include: ${details}.` : null,
+      overlay ? `Text overlay: ${overlay}.` : null
+    ].filter(Boolean);
+
+    const oneLine = (() => {
+      const must = details ? ` Must include: ${details}.` : "";
+      const text = overlay ? ` Text overlay: ${overlay}.` : "";
+      const cam = verbose ? `${lens} lens, sharp focus, strong depth` : `${lens} lens`;
+      return `${goalLine} ${subject}; ${vibe}; ${setting}; ${lighting}; ${cam}; ${quality}; AR ${ar}.${must}${text} ${negatives}`;
+    })();
+
+    return { platform, goalLine, subject, vibe, lighting, lens, setting, details, ar, quality, overlay, strict120, verbose, lines, oneLine, negatives };
+  }
+
+  function lmArenaHeader(){
+    const mode = $("lmaMode").value;
+    if(mode === "battle") return "LM ARENA (Battle / unknown model)";
+    const picked = $("lmaModelPick").value.trim();
+    const manual = $("lmaManual").value.trim();
+    const modelName = manual || picked || "(model not specified)";
+    return `LM ARENA (Direct) — Model: ${modelName}`;
+  }
+
+  function formatOutput(d){
+    const imgBlock = buildImageInstructions(d.platform);
+
+    if(d.platform === "sora2"){
+      const parts = [
+        "SORA 2 (single prompt block)",
+        imgBlock ? imgBlock : null,
+        d.oneLine
+      ].filter(Boolean);
+      return parts.join("\n\n");
+    }
+
+    if(d.platform === "capcut"){
+      const caption = d.overlay || "AI PHOTO PROMO";
+      const onScreen = d.overlay || "AI Photo Promo Generator";
+      const parts = [
+        "CAPCUT (paste-ready blocks)",
+        `Caption:\n${caption}`,
+        `On-screen text:\n${onScreen}`,
+        imgBlock ? imgBlock : null,
+        `Scene prompt:\n${d.oneLine}`,
+        "Hashtags (optional):\n#PocketCinema #AIPrompts #Cinematic #CreatorTools"
+      ].filter(Boolean);
+      return parts.join("\n\n");
+    }
+
+    if(d.platform === "lmarena"){
+      const parts = [
+        lmArenaHeader(),
+        imgBlock ? imgBlock : null,
+        d.lines.join("\n"),
+        `Negative prompt: ${d.negatives}`
+      ].filter(Boolean);
+      return parts.join("\n\n");
+    }
+
+    if(d.platform === "gemini"){
+      const parts = [
+        "GEMINI (nano-banana)",
+        `Task:\n${d.goalLine}`,
+        imgBlock ? imgBlock : null,
+        `Prompt:\n${d.lines.slice(1).join(" ")}`,
+        `Constraints:\n- ${d.negatives.replace("Avoid: ","")}`
+      ].filter(Boolean);
+      return parts.join("\n\n");
+    }
+
+    if(d.platform === "meta"){
+      const parts = [
+        "META AI",
+        imgBlock ? imgBlock : null,
+        d.lines.join(" "),
+        d.negatives
+      ].filter(Boolean);
+      return parts.join("\n\n");
+    }
+
+    if(d.platform === "grok"){
+      const parts = [
+        "GROK",
+        `Generate: ${d.goalLine}`,
+        imgBlock ? imgBlock : null,
+        `Details: ${d.subject}; ${d.vibe}; ${d.setting}; ${d.lighting}; ${d.lens}; ${d.quality}; AR ${d.ar}.`,
+        d.details ? `Must include: ${d.details}.` : null,
+        d.overlay ? `Text overlay: ${d.overlay}.` : null,
+        d.negatives
+      ].filter(Boolean);
+      return parts.join("\n");
+    }
+
+    // ChatGPT default
+    const parts = [
+      "CHATGPT",
+      imgBlock ? imgBlock : null,
+      d.lines.join("\n"),
+      `Negative prompt: ${d.negatives}`
+    ].filter(Boolean);
+    return parts.join("\n\n");
+  }
+
+  function enforce120(text, d){
+    const wc = wordCount(text);
+    if(wc <= 120) return { text, wc, ok:true };
+
+    // fallback: compact + image roles (kept short)
+    let imgMini = "";
+    if(imagePack.length){
+      imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
+    }
+    const compact = `${imgMini}\n${d.oneLine}`.trim();
+    const wc2 = wordCount(compact);
+    return { text: compact, wc: wc2, ok: (wc2 <= 120) };
+  }
+
+  function render(text){
+    $("output").textContent = text;
+    const wc = wordCount(text);
+    let status = `Word count: <strong>${wc}</strong>`;
+    if($("strict120").checked){
+      status += wc <= 120 ? ` — <span class="ok">within 120</span>` : ` — <span class="warn">over 120 (tap Shorten)</span>`;
+    }
+    $("status").innerHTML = status;
+  }
+
+  // ===== Buttons =====
+  $("gen").addEventListener("click", () => {
+    const d = baseData();
+    let out = formatOutput(d);
+    if(d.strict120){
+      out = enforce120(out, d).text;
+    }
+    render(out);
+  });
+
+  $("shorten").addEventListener("click", () => {
+    const d = baseData();
+    const mini = enforce120(formatOutput(d), d).text;
+    render(mini);
+    $("status").innerHTML += ` — <span class="ok">shortened</span>`;
+  });
+
+  $("copy").addEventListener("click", async () => {
+    const text = $("output").textContent;
+    try{
+      await navigator.clipboard.writeText(text);
+      $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
+    }catch(e){
+      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.</span>`;
+    }
+  });
+
+  $("clear").addEventListener("click", () => {
+    ["subject","setting","details","overlay","lmaManual"].forEach(id => { if($(id)) $(id).value = ""; });
+    if($("lmaModelPick")) $("lmaModelPick").value = "";
+    if($("imgFiles")) $("imgFiles").value = "";
+    imagePack = [];
+    renderImagePack();
+    $("output").textContent = "Fill the inputs and tap “Generate”.";
+    $("status").textContent = "";
+  });
+</script>
 </body>
 </html>
