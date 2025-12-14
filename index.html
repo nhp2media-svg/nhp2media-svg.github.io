@@ -268,18 +268,17 @@
         </div>
 
         <div class="tiny">
-          Goal → Quality are “choose or type.” If “Only include…” is ON, empty fields are skipped (and optional fields can be hidden).
+          Dropdown presets are back + you can choose <strong>None</strong> or <strong>Custom</strong>. If “Only include…” is ON, empty/None fields are skipped.
         </div>
 
-        <!-- Goal: datalist -->
-        <label>Goal (choose or type)</label>
-        <input id="goal" list="goalList" placeholder="Promo / Poster" value="Promo / Poster" />
-        <datalist id="goalList">
-          <option value="Promo / Poster"></option>
-          <option value="Product / E-commerce"></option>
-          <option value="YouTube Thumbnail"></option>
-          <option value="Editorial / Paparazzi"></option>
-        </datalist>
+        <!-- Goal (kept simple, always visible; user can type in details if they want) -->
+        <label>Goal</label>
+        <select id="goalPreset">
+          <option value="Promo / Poster" selected>Promo / Poster</option>
+          <option value="Product / E-commerce">Product / E-commerce</option>
+          <option value="YouTube Thumbnail">YouTube Thumbnail</option>
+          <option value="Editorial / Paparazzi">Editorial / Paparazzi</option>
+        </select>
 
         <div class="row">
           <div>
@@ -301,62 +300,90 @@
         <div id="optionalWrap" class="optionalWrap">
           <div class="row">
             <div>
-              <label>Vibe (choose or type)</label>
-              <input id="vibe" list="vibeList" placeholder="Cinematic" value="Cinematic" />
-              <datalist id="vibeList">
-                <option value="Cinematic"></option>
-                <option value="Futuristic Minimal"></option>
-                <option value="Luxury / High-end"></option>
-                <option value="Gritty / Street"></option>
-                <option value="Dreamy / Soft"></option>
-              </datalist>
+              <label>Vibe</label>
+              <select id="vibeMode">
+                <option value="preset" selected>Use preset</option>
+                <option value="none">None (omit)</option>
+                <option value="custom">Custom (type my own)</option>
+              </select>
+              <select id="vibePreset">
+                <option value="Cinematic" selected>Cinematic</option>
+                <option value="Futuristic Minimal">Futuristic Minimal</option>
+                <option value="Luxury / High-end">Luxury / High-end</option>
+                <option value="Gritty / Street">Gritty / Street</option>
+                <option value="Dreamy / Soft">Dreamy / Soft</option>
+              </select>
+              <input id="vibeCustom" class="hidden" placeholder="Type your vibe…" />
             </div>
+
             <div>
-              <label>Lighting (choose or type)</label>
-              <input id="lighting" list="lightingList" placeholder="Softbox studio, clean highlights" value="Softbox studio, clean highlights" />
-              <datalist id="lightingList">
-                <option value="Softbox studio, clean highlights"></option>
-                <option value="Flash-lit paparazzi, crisp speculars"></option>
-                <option value="Golden hour, warm rim light"></option>
-                <option value="Neon accents, high contrast"></option>
-                <option value="Moody low-key, dramatic shadows"></option>
-              </datalist>
+              <label>Lighting</label>
+              <select id="lightingMode">
+                <option value="preset" selected>Use preset</option>
+                <option value="none">None (omit)</option>
+                <option value="custom">Custom (type my own)</option>
+              </select>
+              <select id="lightingPreset">
+                <option value="Softbox studio, clean highlights" selected>Softbox studio, clean highlights</option>
+                <option value="Flash-lit paparazzi, crisp speculars">Flash-lit paparazzi, crisp speculars</option>
+                <option value="Golden hour, warm rim light">Golden hour, warm rim light</option>
+                <option value="Neon accents, high contrast">Neon accents, high contrast</option>
+                <option value="Moody low-key, dramatic shadows">Moody low-key, dramatic shadows</option>
+              </select>
+              <input id="lightingCustom" class="hidden" placeholder="Type your lighting…" />
             </div>
           </div>
 
           <div class="row">
             <div>
-              <label>Camera / Lens (choose or type)</label>
-              <input id="lens" list="lensList" placeholder="50mm portrait" value="50mm portrait" />
-              <datalist id="lensList">
-                <option value="35mm documentary"></option>
-                <option value="50mm portrait"></option>
-                <option value="85mm compression"></option>
-                <option value="24mm wide hero shot"></option>
-              </datalist>
+              <label>Camera / Lens</label>
+              <select id="lensMode">
+                <option value="preset" selected>Use preset</option>
+                <option value="none">None (omit)</option>
+                <option value="custom">Custom (type my own)</option>
+              </select>
+              <select id="lensPreset">
+                <option value="35mm documentary">35mm documentary</option>
+                <option value="50mm portrait" selected>50mm portrait</option>
+                <option value="85mm compression">85mm compression</option>
+                <option value="24mm wide hero shot">24mm wide hero shot</option>
+              </select>
+              <input id="lensCustom" class="hidden" placeholder="Type your camera/lens…" />
             </div>
+
             <div>
-              <label>Aspect Ratio (choose or type)</label>
-              <input id="ar" list="arList" placeholder="9:16" value="9:16" />
-              <datalist id="arList">
-                <option value="1:1"></option>
-                <option value="4:5"></option>
-                <option value="9:16"></option>
-                <option value="16:9"></option>
-              </datalist>
+              <label>Aspect Ratio</label>
+              <select id="arMode">
+                <option value="preset" selected>Use preset</option>
+                <option value="none">None (omit)</option>
+                <option value="custom">Custom (type my own)</option>
+              </select>
+              <select id="arPreset">
+                <option value="1:1">1:1</option>
+                <option value="4:5">4:5</option>
+                <option value="9:16" selected>9:16</option>
+                <option value="16:9">16:9</option>
+              </select>
+              <input id="arCustom" class="hidden" placeholder="Type your aspect ratio…" />
             </div>
           </div>
 
           <div class="row">
             <div>
-              <label>Quality (choose or type)</label>
-              <input id="quality" list="qualityList" placeholder="Ultra-detailed, realistic texture" value="Ultra-detailed, realistic texture" />
-              <datalist id="qualityList">
-                <option value="Ultra-detailed, realistic texture"></option>
-                <option value="Clean, polished, minimal grain"></option>
-                <option value="Film grain, editorial realism"></option>
-              </datalist>
+              <label>Quality</label>
+              <select id="qualityMode">
+                <option value="preset" selected>Use preset</option>
+                <option value="none">None (omit)</option>
+                <option value="custom">Custom (type my own)</option>
+              </select>
+              <select id="qualityPreset">
+                <option value="Ultra-detailed, realistic texture" selected>Ultra-detailed, realistic texture</option>
+                <option value="Clean, polished, minimal grain">Clean, polished, minimal grain</option>
+                <option value="Film grain, editorial realism">Film grain, editorial realism</option>
+              </select>
+              <input id="qualityCustom" class="hidden" placeholder="Type your quality instruction…" />
             </div>
+
             <div>
               <label>Text overlay (optional)</label>
               <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
@@ -403,14 +430,6 @@
 
 <script>
   const $ = (id) => document.getElementById(id);
-  const DEFAULTS = {
-    goal: "Promo / Poster",
-    vibe: "Cinematic",
-    lighting: "Softbox studio, clean highlights",
-    lens: "50mm portrait",
-    ar: "9:16",
-    quality: "Ultra-detailed, realistic texture"
-  };
 
   function wordCount(text){
     return text.trim().split(/\s+/).filter(Boolean).length;
@@ -443,15 +462,12 @@
   function syncOptionalVisibilityRules(){
     const onlyFilled = $("onlyFilled").checked;
 
-    // show/hide the "Hide optional fields until used" chip
     $("hideOptionalChip").classList.toggle("hidden", !onlyFilled);
 
     if(!onlyFilled){
-      // When onlyFilled is OFF, show optional section by default (user can still hide manually)
-      return;
+      return; // user can manually hide/show optional section
     }
 
-    // When onlyFilled is ON, default to hiding optional section if hideOptional is ON
     const hideOpt = $("hideOptional").checked;
     if(hideOpt){
       setOptionalVisible(false);
@@ -464,12 +480,49 @@
   $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
   syncOptionalVisibilityRules();
 
-  // If user starts typing in optional fields while hidden, auto-show the optional section
-  const optionalFieldIds = ["vibe","lighting","lens","ar","quality","overlay","details"];
-  optionalFieldIds.forEach(id => {
+  // If user types in optional fields while hidden, auto-show optional section
+  ["vibeCustom","lightingCustom","lensCustom","arCustom","qualityCustom","overlay","details"].forEach(id => {
     $(id).addEventListener("input", () => {
       if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
-        // Show section the moment they interact (nice UX)
+        setOptionalVisible(true);
+        $("hideOptional").checked = false;
+        syncOptionalVisibilityRules();
+      }
+    });
+  });
+
+  // ===== Tri-field (Preset / None / Custom) helpers =====
+  function bindTriField(modeId, presetId, customId){
+    const mode = $(modeId);
+    const preset = $(presetId);
+    const custom = $(customId);
+
+    function sync(){
+      const m = mode.value;
+      preset.classList.toggle("hidden", m !== "preset");
+      custom.classList.toggle("hidden", m !== "custom");
+    }
+    mode.addEventListener("change", sync);
+    sync();
+  }
+
+  function triValue(modeId, presetId, customId){
+    const m = $(modeId).value;
+    if(m === "none") return "";
+    if(m === "custom") return ($(customId).value || "").trim();
+    return ($(presetId).value || "").trim();
+  }
+
+  bindTriField("vibeMode","vibePreset","vibeCustom");
+  bindTriField("lightingMode","lightingPreset","lightingCustom");
+  bindTriField("lensMode","lensPreset","lensCustom");
+  bindTriField("arMode","arPreset","arCustom");
+  bindTriField("qualityMode","qualityPreset","qualityCustom");
+
+  // Auto-show optional section when switching to custom mode (nice UX)
+  ["vibeMode","lightingMode","lensMode","arMode","qualityMode"].forEach(id => {
+    $(id).addEventListener("change", () => {
+      if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
         setOptionalVisible(true);
         $("hideOptional").checked = false;
         syncOptionalVisibilityRules();
@@ -598,53 +651,64 @@
     const verbose = $("verbose").checked;
     const strict120 = $("strict120").checked;
 
-    const raw = {
-      goal: ($("goal").value || "").trim(),
-      vibe: ($("vibe").value || "").trim(),
-      lighting: ($("lighting").value || "").trim(),
-      lens: ($("lens").value || "").trim(),
-      ar: ($("ar").value || "").trim(),
-      quality: ($("quality").value || "").trim(),
-      subject: ($("subject").value || "").trim(),
-      setting: ($("setting").value || "").trim(),
-      details: ($("details").value || "").trim(),
-      overlay: ($("overlay").value || "").trim()
-    };
+    const goal = ($("goalPreset").value || "").trim();
 
-    // Defaults only when onlyFilled is OFF
-    const goal = onlyFilled ? raw.goal : (raw.goal || DEFAULTS.goal);
-    const vibe = onlyFilled ? raw.vibe : (raw.vibe || DEFAULTS.vibe);
-    const lighting = onlyFilled ? raw.lighting : (raw.lighting || DEFAULTS.lighting);
-    const lens = onlyFilled ? raw.lens : (raw.lens || DEFAULTS.lens);
-    const ar = onlyFilled ? raw.ar : (raw.ar || DEFAULTS.ar);
-    const quality = onlyFilled ? raw.quality : (raw.quality || DEFAULTS.quality);
+    const vibe = triValue("vibeMode","vibePreset","vibeCustom");
+    const lighting = triValue("lightingMode","lightingPreset","lightingCustom");
+    const lens = triValue("lensMode","lensPreset","lensCustom");
+    const ar = triValue("arMode","arPreset","arCustom");
+    const quality = triValue("qualityMode","qualityPreset","qualityCustom");
 
-    // Subject + setting always have a fallback so prompts are usable
-    const subject = raw.subject || "a subject";
-    const setting = raw.setting || "a fitting environment";
+    const subjectRaw = ($("subject").value || "").trim();
+    const settingRaw = ($("setting").value || "").trim();
+    const details = ($("details").value || "").trim();
+    const overlay = ($("overlay").value || "").trim();
+
+    // subject + setting always have fallback for usable prompts
+    const subject = subjectRaw || "a subject";
+    const setting = settingRaw || "a fitting environment";
 
     const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
 
     const lines = [];
-    // branding line always
     lines.push("Pocket Cinema — Prompt Generator (© Nathan Histed).");
 
+    // Goal is always present (simple + stable)
     if(goal) lines.push(`Goal: ${goal}.`);
+
     lines.push(`Subject: ${subject}.`);
     lines.push(`Setting: ${setting}.`);
 
-    if(vibe) lines.push(`Style: ${vibe}.`);
-    if(lighting) lines.push(`Lighting: ${lighting}.`);
-
-    if(lens){
-      lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
+    // Optional fields: include only if (a) onlyFilled is OFF OR (b) field not empty
+    function maybePush(label, value){
+      if(!value) return;
+      lines.push(`${label}: ${value}.`);
     }
-    if(quality) lines.push(`Quality: ${quality}.`);
-    if(ar) lines.push(`Aspect ratio: ${ar}.`);
 
-    if(raw.details) lines.push(`Must include: ${raw.details}.`);
-    if(raw.overlay) lines.push(`Text overlay: ${raw.overlay}.`);
+    if(!onlyFilled){
+      // if user didn't choose None, vibe/lighting/etc will still have preset values (default)
+      maybePush("Style", vibe || "");
+      maybePush("Lighting", lighting || "");
+      if(lens){
+        lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
+      }
+      maybePush("Quality", quality || "");
+      maybePush("Aspect ratio", ar || "");
+    }else{
+      // only include if they actually set it (preset/custom) AND not None
+      maybePush("Style", vibe);
+      maybePush("Lighting", lighting);
+      if(lens){
+        lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
+      }
+      maybePush("Quality", quality);
+      maybePush("Aspect ratio", ar);
+    }
 
+    if(details) lines.push(`Must include: ${details}.`);
+    if(overlay) lines.push(`Text overlay: ${overlay}.`);
+
+    // Compact one-line
     const oneParts = [];
     if(goal) oneParts.push(`Goal: ${goal}`);
     oneParts.push(subject);
@@ -655,9 +719,9 @@
     if(quality) oneParts.push(quality);
     if(ar) oneParts.push(`AR ${ar}`);
 
-    const oneLine = `${oneParts.join("; ")}. ${raw.details ? `Must include: ${raw.details}. ` : ""}${raw.overlay ? `Text overlay: ${raw.overlay}. ` : ""}${negatives}`.trim();
+    const oneLine = `${oneParts.join("; ")}. ${details ? `Must include: ${details}. ` : ""}${overlay ? `Text overlay: ${overlay}. ` : ""}${negatives}`.trim();
 
-    return { platform, onlyFilled, verbose, strict120, lines, oneLine, negatives, overlay: raw.overlay, details: raw.details };
+    return { platform, onlyFilled, verbose, strict120, lines, oneLine, negatives, overlay, details };
   }
 
   function lmArenaHeader(){
@@ -754,9 +818,9 @@
   });
 
   $("clear").addEventListener("click", () => {
-    // reset core
+    // core resets
     $("platform").value = "gemini";
-    $("goal").value = DEFAULTS.goal;
+    $("goalPreset").value = "Promo / Poster";
     $("subject").value = "";
     $("setting").value = "";
     $("onlyFilled").checked = false;
@@ -765,26 +829,34 @@
     $("strict120").checked = false;
     $("verbose").checked = true;
 
-    // reset optional fields
-    $("vibe").value = DEFAULTS.vibe;
-    $("lighting").value = DEFAULTS.lighting;
-    $("lens").value = DEFAULTS.lens;
-    $("ar").value = DEFAULTS.ar;
-    $("quality").value = DEFAULTS.quality;
+    // optional tri-field resets
+    $("vibeMode").value = "preset"; $("vibePreset").value = "Cinematic"; $("vibeCustom").value = "";
+    $("lightingMode").value = "preset"; $("lightingPreset").value = "Softbox studio, clean highlights"; $("lightingCustom").value = "";
+    $("lensMode").value = "preset"; $("lensPreset").value = "50mm portrait"; $("lensCustom").value = "";
+    $("arMode").value = "preset"; $("arPreset").value = "9:16"; $("arCustom").value = "";
+    $("qualityMode").value = "preset"; $("qualityPreset").value = "Ultra-detailed, realistic texture"; $("qualityCustom").value = "";
+
+    // sync tri-field visibility
+    bindTriField("vibeMode","vibePreset","vibeCustom");
+    bindTriField("lightingMode","lightingPreset","lightingCustom");
+    bindTriField("lensMode","lensPreset","lensCustom");
+    bindTriField("arMode","arPreset","arCustom");
+    bindTriField("qualityMode","qualityPreset","qualityCustom");
+
     $("overlay").value = "";
     $("details").value = "";
 
-    // reset LM Arena
+    // LM Arena reset
     $("lmaMode").value = "battle";
     $("lmaModelPick").value = "";
     $("lmaManual").value = "";
     syncLmArenaUI();
 
-    // reset optional visibility
+    // optional visibility reset
     setOptionalVisible(true);
     syncOptionalVisibilityRules();
 
-    // reset images
+    // images reset
     $("imgFiles").value = "";
     imagePack = [];
     renderImagePack();
