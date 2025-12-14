@@ -197,7 +197,7 @@
     <div class="top">
       <div class="brand">
         <h1>Pocket Cinema — AI Photo Promo Generator</h1>
-        <p>Created by Nathan Histed. Multi-platform prompt blocks + reference image pack (1–10).</p>
+        <p>Created by Nathan Histed. Dual rewrite engine (Local / Gemini BYO key) + reference image pack (1–10).</p>
       </div>
       <div class="pill"><span>©</span><strong>Nathan Histed</strong></div>
     </div>
@@ -216,6 +216,41 @@
           <option value="lmarena">LM Arena</option>
           <option value="capcut">CapCut</option>
         </select>
+
+        <!-- Rewrite Engine (Dual Mode) -->
+        <div class="sectionHead" style="margin-top:14px;">
+          <h3>Rewrite Engine</h3>
+        </div>
+
+        <label>Rewrite mode</label>
+        <select id="rewriteMode">
+          <option value="off">Off (template only)</option>
+          <option value="local" selected>Local rewrite (free, in-browser)</option>
+          <option value="gemini">Gemini rewrite (BYO key)</option>
+        </select>
+
+        <div id="geminiKeyWrap" class="optionalWrap hidden" style="margin-top:10px;">
+          <label>Gemini API key (stored only in your browser)</label>
+          <input id="geminiKey" type="password" placeholder="Paste your Gemini API key…" autocomplete="off" />
+          <div class="row">
+            <div>
+              <label>Gemini text model</label>
+              <input id="geminiModel" placeholder="e.g., gemini-2.5-flash" value="gemini-2.5-flash" />
+            </div>
+            <div>
+              <label class="chip" style="margin-top:34px;">
+                <input type="checkbox" id="rememberKey" />
+                <span>Remember key on this device</span>
+              </label>
+            </div>
+          </div>
+          <div class="tiny">
+            Tip: Don’t use a key you can’t rotate. Static sites can’t hide secrets.
+          </div>
+        </div>
+
+        <label>Raw prompt / notes (this gets rewritten)</label>
+        <textarea id="rawPrompt" placeholder="Type messy ideas here — the tool rewrites it into a clean, production-ready prompt…"></textarea>
 
         <!-- LM Arena settings -->
         <div id="lmaWrap" class="hidden" style="margin-top:10px;">
@@ -312,7 +347,7 @@
           Optional fields can be <strong>None</strong>, a preset, or <strong>Custom…</strong>.
         </div>
 
-        <!-- GOAL UPDATED: None / Preset / Custom -->
+        <!-- Goal -->
         <label>Goal</label>
         <select id="goalSelect">
           <option value="Promo / Poster" selected>Promo / Poster</option>
@@ -326,12 +361,12 @@
 
         <div class="row">
           <div>
-            <label>Subject</label>
-            <input id="subject" placeholder="e.g., a creator holding a camera, a slime product, a musician" />
+            <label>Subject (optional helper)</label>
+            <input id="subject" placeholder="Used as extra guidance, but rewrite focuses on Raw Prompt." />
           </div>
           <div>
-            <label>Setting / Background</label>
-            <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
+            <label>Setting / Background (optional helper)</label>
+            <input id="setting" placeholder="Used as extra guidance, but rewrite focuses on Raw Prompt." />
           </div>
         </div>
 
@@ -418,13 +453,13 @@
             </div>
           </div>
 
-          <label>Key details (optional)</label>
-          <textarea id="details" placeholder="Logos, colors, clothing, props, composition, mood notes…"></textarea>
+          <label>Key details (optional helper)</label>
+          <textarea id="details" placeholder="Extra constraints; rewrite focuses on Raw Prompt."></textarea>
         </div>
 
         <label>Reference Images (1–10)</label>
         <input id="imgFiles" type="file" accept="image/*" multiple />
-        <div class="tiny">Upload up to 10 images. Label each image to make the prompt smarter (no server uploads).</div>
+        <div class="tiny">Upload up to 10 images. Label each image to make the rewrite smarter (no server uploads).</div>
         <div id="imgPreview" class="imgGrid"></div>
 
         <div class="btns">
@@ -493,12 +528,10 @@
     $("pwBackdrop").classList.remove("hidden");
     setTimeout(() => $("pwInput").focus(), 60);
   }
-
   function closePasswordModal(){
     pendingAction = null;
     $("pwBackdrop").classList.add("hidden");
   }
-
   function submitPassword(){
     const entered = ($("pwInput").value || "").trim();
     if(entered !== ACCESS_PASSWORD){
@@ -511,16 +544,13 @@
     closePasswordModal();
     if(typeof fn === "function") fn();
   }
-
   $("pwSubmit").addEventListener("click", submitPassword);
   $("pwCancel").addEventListener("click", closePasswordModal);
   $("pwClose").addEventListener("click", closePasswordModal);
-
   $("pwInput").addEventListener("keydown", (e) => {
     if(e.key === "Enter") submitPassword();
     if(e.key === "Escape") closePasswordModal();
   });
-
   $("pwBackdrop").addEventListener("click", (e) => {
     if(e.target === $("pwBackdrop")) closePasswordModal();
   });
@@ -528,6 +558,34 @@
   function wordCount(text){
     return text.trim().split(/\s+/).filter(Boolean).length;
   }
+
+  // ===== Rewrite Mode UI =====
+  function syncRewriteUI(){
+    const mode = $("rewriteMode").value;
+    $("geminiKeyWrap").classList.toggle("hidden", mode !== "gemini");
+    if(mode === "gemini"){
+      // restore remembered key if set
+      const saved = localStorage.getItem("pc_gemini_key") || "";
+      if(saved && !$("geminiKey").value) $("geminiKey").value = saved;
+    }
+  }
+  $("rewriteMode").addEventListener("change", syncRewriteUI);
+
+  // remember key toggle
+  $("rememberKey").addEventListener("change", () => {
+    if(!$("rememberKey").checked){
+      localStorage.removeItem("pc_gemini_key");
+    }else{
+      const k = ($("geminiKey").value || "").trim();
+      if(k) localStorage.setItem("pc_gemini_key", k);
+    }
+  });
+  $("geminiKey").addEventListener("input", () => {
+    if($("rememberKey").checked){
+      const k = ($("geminiKey").value || "").trim();
+      if(k) localStorage.setItem("pc_gemini_key", k);
+    }
+  });
 
   // ===== LM Arena UI =====
   function syncLmArenaUI(){
@@ -553,20 +611,14 @@
   }
   $("lmaModelMode").addEventListener("change", syncLmaModelModeUI);
 
-  syncLmArenaUI();
-
   // ===== Optional fields UI =====
   let optionalVisible = true;
-
   function setOptionalVisible(isVisible){
     optionalVisible = isVisible;
     $("optionalWrap").classList.toggle("hidden", !isVisible);
     $("toggleOptionalBtn").textContent = isVisible ? "Hide" : "Show";
   }
-
-  $("toggleOptionalBtn").addEventListener("click", () => {
-    setOptionalVisible(!optionalVisible);
-  });
+  $("toggleOptionalBtn").addEventListener("click", () => setOptionalVisible(!optionalVisible));
 
   function syncOptionalVisibilityRules(){
     const onlyFilled = $("onlyFilled").checked;
@@ -576,10 +628,8 @@
     const hideOpt = $("hideOptional").checked;
     setOptionalVisible(!hideOpt);
   }
-
   $("onlyFilled").addEventListener("change", syncOptionalVisibilityRules);
   $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
-  syncOptionalVisibilityRules();
 
   // ===== Custom reveal for single-select fields =====
   function bindCustomSelect(selectId, customId){
@@ -603,7 +653,6 @@
     sync();
   }
 
-  // bind Goal + others
   bindCustomSelect("goalSelect","goalCustom");
   bindCustomSelect("vibeSelect","vibeCustom");
   bindCustomSelect("lightingSelect","lightingCustom");
@@ -613,7 +662,7 @@
 
   function selectValue(selectId, customId){
     const sel = $(selectId).value;
-    if(sel === "") return "";              // None (omit)
+    if(sel === "") return "";
     if(sel === "__custom__") return ($(customId).value || "").trim();
     return sel.trim();
   }
@@ -621,9 +670,7 @@
   // ===== Image pack =====
   let imagePack = []; // {name, dataUrl, role, keep, change}
 
-  function clampImages(files){
-    return Array.from(files || []).slice(0, 10);
-  }
+  function clampImages(files){ return Array.from(files || []).slice(0, 10); }
 
   function roleOption(label, current){
     const selected = (label === current) ? "selected" : "";
@@ -684,20 +731,13 @@
   $("imgFiles").addEventListener("change", async (e) => {
     const files = clampImages(e.target.files);
     imagePack = [];
-
     for(const f of files){
       const dataUrl = await new Promise((res) => {
         const r = new FileReader();
         r.onload = () => res(r.result);
         r.readAsDataURL(f);
       });
-      imagePack.push({
-        name: f.name || "image",
-        dataUrl,
-        role: "Primary subject/identity",
-        keep: "",
-        change: ""
-      });
+      imagePack.push({ name: f.name || "image", dataUrl, role: "Primary subject/identity", keep: "", change: "" });
     }
     renderImagePack();
   });
@@ -711,148 +751,180 @@
       return `Image ${i+1} — Role: ${img.role}.${keep}${change}`.trim();
     });
 
-    if(platform === "capcut"){
-      return ["Reference Images (CapCut workflow):","Use Image 1 as the cover/frame reference if applicable.", ...lines].join("\n");
-    }
-    if(platform === "sora2"){
-      return ["Reference Images (Sora 2):","Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.", ...lines].join("\n");
-    }
-    if(platform === "lmarena"){
-      return ["Reference Images (LM Arena):","If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.", ...lines].join("\n");
-    }
-    if(platform === "gemini"){
-      return ["Reference Images (Gemini):","Attach images in order. Use Image 1 as primary subject reference; follow roles below.", ...lines].join("\n");
-    }
-    if(platform === "grok"){
-      return ["Reference Images (Grok):","Attach images in order. Follow these roles/constraints:", ...lines].join("\n");
-    }
-    if(platform === "meta"){
-      return ["Reference Images (Meta AI):","Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.", ...lines].join("\n");
-    }
+    if(platform === "capcut") return ["Reference Images (CapCut workflow):","Use Image 1 as the cover/frame reference if applicable.", ...lines].join("\n");
+    if(platform === "sora2") return ["Reference Images (Sora 2):","Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.", ...lines].join("\n");
+    if(platform === "lmarena") return ["Reference Images (LM Arena):","If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.", ...lines].join("\n");
+    if(platform === "gemini") return ["Reference Images (Gemini):","Attach images in order. Use Image 1 as primary subject reference; follow roles below.", ...lines].join("\n");
+    if(platform === "grok") return ["Reference Images (Grok):","Attach images in order. Follow these roles/constraints:", ...lines].join("\n");
+    if(platform === "meta") return ["Reference Images (Meta AI):","Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.", ...lines].join("\n");
     return ["Reference Images:","Attach images in order. Follow these roles and constraints:", ...lines].join("\n");
   }
 
-  // ===== Prompt building =====
-  function baseData(){
-    const platform = $("platform").value;
-    const verbose = $("verbose").checked;
-    const strict120 = $("strict120").checked;
+  // ===== Local rewrite (free) =====
+  function rewriteLocal(raw, opts){
+    let t = (raw || "").trim();
+    if(!t) t = "";
 
-    const goal = selectValue("goalSelect","goalCustom");
+    // Basic cleanup
+    t = t
+      .replace(/\s{2,}/g, " ")
+      .replace(/[“”]/g,'"')
+      .replace(/[’]/g,"'")
+      .trim();
 
-    const vibe = selectValue("vibeSelect","vibeCustom");
-    const lighting = selectValue("lightingSelect","lightingCustom");
-    const lens = selectValue("lensSelect","lensCustom");
-    const ar = selectValue("arSelect","arCustom");
-    const quality = selectValue("qualitySelect","qualityCustom");
+    // Tiny “promptifier”
+    t = t
+      .replace(/\bmake it\b/gi, "create")
+      .replace(/\bmake this\b/gi, "create")
+      .replace(/\breally\b/gi, "")
+      .replace(/\bvery\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
 
-    const subjectRaw = ($("subject").value || "").trim();
-    const settingRaw = ($("setting").value || "").trim();
-    const details = ($("details").value || "").trim();
-    const overlay = ($("overlay").value || "").trim();
+    // If user wrote fragments, we still want a usable base sentence
+    if(t && !/[.!?]$/.test(t)) t += ".";
 
-    const subject = subjectRaw || "a subject";
-    const setting = settingRaw || "a fitting environment";
+    // Build a polished, cinematic core prompt
+    const extras = [];
+    if(opts.goal) extras.push(`Goal: ${opts.goal}`);
+    if(opts.subjectHelper) extras.push(`Subject: ${opts.subjectHelper}`);
+    if(opts.settingHelper) extras.push(`Setting: ${opts.settingHelper}`);
+    if(opts.vibe) extras.push(`Style: ${opts.vibe}`);
+    if(opts.lighting) extras.push(`Lighting: ${opts.lighting}`);
+    if(opts.lens) extras.push(`Camera: ${opts.lens}`);
+    if(opts.quality) extras.push(`Quality: ${opts.quality}`);
+    if(opts.ar) extras.push(`Aspect ratio: ${opts.ar}`);
+    if(opts.overlay) extras.push(`Text overlay: ${opts.overlay}`);
+    if(opts.detailsHelper) extras.push(`Constraints: ${opts.detailsHelper}`);
 
-    const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
+    const core = t ? `Rewrite + enhance this into a production-ready image prompt: ${t}` : "Create a production-ready image prompt from the provided fields.";
+    const joined = [core, extras.length ? extras.join(" | ") : ""].filter(Boolean).join("\n");
 
-    const lines = [];
-    lines.push("Pocket Cinema — Prompt Generator (© Nathan Histed).");
-    if(goal) lines.push(`Goal: ${goal}.`);
-    lines.push(`Subject: ${subject}.`);
-    lines.push(`Setting: ${setting}.`);
-
-    function maybe(label, value){
-      if(!value) return;
-      lines.push(`${label}: ${value}.`);
-    }
-
-    maybe("Style", vibe);
-    maybe("Lighting", lighting);
-    if(lens){
-      lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
-    }
-    maybe("Quality", quality);
-    maybe("Aspect ratio", ar);
-
-    if(details) lines.push(`Must include: ${details}.`);
-    if(overlay) lines.push(`Text overlay: ${overlay}.`);
-
-    const oneParts = [];
-    if(goal) oneParts.push(`Goal: ${goal}`);
-    oneParts.push(subject);
-    oneParts.push(setting);
-    if(vibe) oneParts.push(vibe);
-    if(lighting) oneParts.push(lighting);
-    if(lens) oneParts.push(lens);
-    if(quality) oneParts.push(quality);
-    if(ar) oneParts.push(`AR ${ar}`);
-
-    const oneLine = `${oneParts.join("; ")}. ${details ? `Must include: ${details}. ` : ""}${overlay ? `Text overlay: ${overlay}. ` : ""}${negatives}`.trim();
-
-    return { platform, verbose, strict120, lines, oneLine, negatives, overlay };
+    // Return a “rewritten” prompt (still local, but much cleaner than raw + dropdown paste)
+    return joined
+      .replace(/\s{2,}/g, " ")
+      .trim();
   }
 
+  // ===== Gemini rewrite (BYO key) =====
+  async function rewriteGemini(raw, opts){
+    const key = ($("geminiKey").value || "").trim();
+    const model = ($("geminiModel").value || "gemini-2.5-flash").trim();
+    if(!key) throw new Error("Missing Gemini API key.");
+
+    // Keep prompt short + consistent; enforce 120 if requested
+    const target = opts.strict120 ? "UNDER 120 WORDS" : "concise but detailed";
+    const sys = `You are Pocket Cinema’s prompt copywriter. Rewrite messy user notes into a single, clean, production-ready image prompt. Keep it ${target}. No disclaimers. No bullet lists. Output ONLY the rewritten prompt text.`;
+
+    const guidance = [
+      opts.goal ? `Goal: ${opts.goal}` : "",
+      opts.subjectHelper ? `Subject: ${opts.subjectHelper}` : "",
+      opts.settingHelper ? `Setting: ${opts.settingHelper}` : "",
+      opts.vibe ? `Style/Vibe: ${opts.vibe}` : "",
+      opts.lighting ? `Lighting: ${opts.lighting}` : "",
+      opts.lens ? `Camera/Lens: ${opts.lens}` : "",
+      opts.quality ? `Quality: ${opts.quality}` : "",
+      opts.ar ? `Aspect Ratio: ${opts.ar}` : "",
+      opts.overlay ? `Text overlay: ${opts.overlay}` : "",
+      opts.detailsHelper ? `Extra constraints: ${opts.detailsHelper}` : ""
+    ].filter(Boolean).join("\n");
+
+    const userText = (raw || "").trim() || "(No raw notes provided — create a strong prompt from the fields.)";
+
+    const body = {
+      contents: [
+        { role: "user", parts: [{ text: `${sys}\n\nUSER NOTES:\n${userText}\n\nFIELDS:\n${guidance}` }] }
+      ],
+      generationConfig: {
+        temperature: 0.6,
+        maxOutputTokens: opts.strict120 ? 240 : 600
+      }
+    };
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if(!resp.ok){
+      let detail = "";
+      try{ detail = await resp.text(); }catch(e){}
+      throw new Error(`Gemini error (${resp.status}). ${detail ? detail.slice(0, 220) : ""}`.trim());
+    }
+
+    const data = await resp.json();
+    const text =
+      data?.candidates?.[0]?.content?.parts
+        ?.map(p => p.text || "")
+        .join("")
+        .trim() || "";
+
+    if(!text) throw new Error("Gemini returned empty text.");
+    return text;
+  }
+
+  // ===== Prompt building =====
   function lmArenaHeader(){
     const mode = $("lmaMode").value;
     if(mode === "battle") return "LM ARENA (Battle / unknown model)";
-
     const modelMode = $("lmaModelMode").value;
     if(modelMode === "none") return "LM Arena Direct";
-
     if(modelMode === "custom"){
       const manual = ($("lmaManual").value || "").trim();
       return manual ? `LM Arena Direct — Model: ${manual}` : "LM Arena Direct";
     }
-
     const picked = ($("lmaModelPick").value || "").trim();
     return picked ? `LM Arena Direct — Model: ${picked}` : "LM Arena Direct";
   }
 
-  function formatOutput(d){
-    const imgBlock = buildImageInstructions(d.platform);
+  function formatOutput(platform, rewrittenPrompt, negatives){
+    const imgBlock = buildImageInstructions(platform);
 
-    if(d.platform === "sora2"){
-      return ["SORA 2 (single prompt block)", imgBlock || null, d.oneLine].filter(Boolean).join("\n\n");
+    if(platform === "sora2"){
+      return ["SORA 2 (single prompt block)", imgBlock || null, rewrittenPrompt].filter(Boolean).join("\n\n");
     }
-    if(d.platform === "capcut"){
-      const caption = d.overlay || "AI PHOTO PROMO";
-      const onScreen = d.overlay || "AI Photo Promo Generator";
+    if(platform === "capcut"){
+      const caption = $("overlay").value.trim() || "AI PHOTO PROMO";
+      const onScreen = $("overlay").value.trim() || "AI Photo Promo Generator";
       return [
         "CAPCUT (paste-ready blocks)",
         `Caption:\n${caption}`,
         `On-screen text:\n${onScreen}`,
         imgBlock || null,
-        `Scene prompt:\n${d.oneLine}`,
+        `Scene prompt:\n${rewrittenPrompt}`,
         "Hashtags (optional):\n#PocketCinema #AIPrompts #Cinematic #CreatorTools"
       ].filter(Boolean).join("\n\n");
     }
-    if(d.platform === "lmarena"){
-      return [lmArenaHeader(), imgBlock || null, d.lines.join("\n"), `Negative prompt: ${d.negatives}`]
+    if(platform === "lmarena"){
+      return [lmArenaHeader(), imgBlock || null, rewrittenPrompt, `Negative prompt: ${negatives}`].filter(Boolean).join("\n\n");
+    }
+    if(platform === "gemini"){
+      return ["GEMINI (nano-banana)", imgBlock || null, `Prompt:\n${rewrittenPrompt}`, `Constraints:\n- ${negatives.replace("Avoid: ","")}`]
         .filter(Boolean).join("\n\n");
     }
-    if(d.platform === "gemini"){
-      return ["GEMINI (nano-banana)", imgBlock || null, `Prompt:\n${d.lines.join(" ")}`, `Constraints:\n- ${d.negatives.replace("Avoid: ","")}`]
-        .filter(Boolean).join("\n\n");
+    if(platform === "meta"){
+      return ["META AI", imgBlock || null, rewrittenPrompt, negatives].filter(Boolean).join("\n\n");
     }
-    if(d.platform === "meta"){
-      return ["META AI", imgBlock || null, d.lines.join(" "), d.negatives].filter(Boolean).join("\n\n");
+    if(platform === "grok"){
+      return ["GROK", imgBlock || null, `Prompt:\n${rewrittenPrompt}`, negatives].filter(Boolean).join("\n\n");
     }
-    if(d.platform === "grok"){
-      return ["GROK", imgBlock || null, `Prompt:\n${d.lines.join(" ")}`, d.negatives].filter(Boolean).join("\n\n");
-    }
-    return ["CHATGPT", imgBlock || null, d.lines.join("\n"), `Negative prompt: ${d.negatives}`].filter(Boolean).join("\n\n");
+    return ["CHATGPT", imgBlock || null, rewrittenPrompt, `Negative prompt: ${negatives}`].filter(Boolean).join("\n\n");
   }
 
-  function enforce120(text, d){
+  function enforce120(text){
     const wc = wordCount(text);
     if(wc <= 120) return text;
 
+    // Hard fallback: compress to a single prompt line + short image role hint
     let imgMini = "";
     if(imagePack.length){
       imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
     }
-    return `${imgMini}\n${d.oneLine}`.trim();
+    const raw = ($("rawPrompt").value || "").trim();
+    const fallback = raw ? raw : "Create a high-quality, realistic promotional image with clean composition and natural details.";
+    return [imgMini, fallback].filter(Boolean).join("\n").trim();
   }
 
   function render(text){
@@ -865,18 +937,92 @@
     $("status").innerHTML = status;
   }
 
-  function doGenerate(){
-    const d = baseData();
-    let out = formatOutput(d);
-    if(d.strict120) out = enforce120(out, d);
-    render(out);
+  async function buildRewrittenPrompt(){
+    const platform = $("platform").value;
+    const strict120 = $("strict120").checked;
+
+    const goal = selectValue("goalSelect","goalCustom");
+    const vibe = selectValue("vibeSelect","vibeCustom");
+    const lighting = selectValue("lightingSelect","lightingCustom");
+    const lens = selectValue("lensSelect","lensCustom");
+    const ar = selectValue("arSelect","arCustom");
+    const quality = selectValue("qualitySelect","qualityCustom");
+    const overlay = ($("overlay").value || "").trim();
+    const detailsHelper = ($("details").value || "").trim();
+    const subjectHelper = ($("subject").value || "").trim();
+    const settingHelper = ($("setting").value || "").trim();
+
+    const raw = ($("rawPrompt").value || "").trim();
+
+    const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
+
+    // If rewrite off, still build a “clean” prompt using fields + raw notes
+    const mode = $("rewriteMode").value;
+
+    const opts = { strict120, goal, vibe, lighting, lens, ar, quality, overlay, detailsHelper, subjectHelper, settingHelper, platform };
+
+    if(mode === "gemini"){
+      const rewritten = await rewriteGemini(raw, opts);
+      return { rewritten, negatives };
+    }
+
+    if(mode === "local"){
+      // local rewrite returns an instruction-like rewritten prompt; we want final prompt text
+      // so we “compress” into a single clean prompt line
+      const staged = rewriteLocal(raw, opts);
+      // turn staging into a readable prompt
+      const cleaned = staged
+        .replace(/^Rewrite \+ enhance this into a production-ready image prompt:\s*/i, "")
+        .replace(/\n+/g, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+      return { rewritten: cleaned, negatives };
+    }
+
+    // Off: combine raw + selected fields without heavy rewriting
+    const parts = [];
+    if(raw) parts.push(raw);
+    if(goal) parts.push(`Goal: ${goal}.`);
+    if(subjectHelper) parts.push(`Subject: ${subjectHelper}.`);
+    if(settingHelper) parts.push(`Setting: ${settingHelper}.`);
+    if(vibe) parts.push(`Style: ${vibe}.`);
+    if(lighting) parts.push(`Lighting: ${lighting}.`);
+    if(lens) parts.push(`Camera: ${lens}.`);
+    if(quality) parts.push(`Quality: ${quality}.`);
+    if(ar) parts.push(`Aspect ratio: ${ar}.`);
+    if(detailsHelper) parts.push(`Must include: ${detailsHelper}.`);
+    if(overlay) parts.push(`Text overlay: ${overlay}.`);
+
+    return { rewritten: parts.join(" ").replace(/\s{2,}/g," ").trim(), negatives };
   }
 
-  function doShorten(){
-    const d = baseData();
-    const mini = enforce120(formatOutput(d), d);
-    render(mini);
-    $("status").innerHTML += ` — <span class="ok">shortened</span>`;
+  // ===== Actions =====
+  async function doGenerate(){
+    $("status").innerHTML = `<span class="warn">Working…</span>`;
+    const platform = $("platform").value;
+    const strict120 = $("strict120").checked;
+
+    try{
+      const { rewritten, negatives } = await buildRewrittenPrompt();
+      let out = formatOutput(platform, rewritten, negatives);
+      if(strict120) out = enforce120(out);
+      render(out);
+    }catch(err){
+      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(err.message || String(err))}`;
+    }
+  }
+
+  async function doShorten(){
+    $("status").innerHTML = `<span class="warn">Working…</span>`;
+    const platform = $("platform").value;
+    try{
+      const { rewritten, negatives } = await buildRewrittenPrompt();
+      const out = enforce120(formatOutput(platform, rewritten, negatives));
+      render(out);
+      $("status").innerHTML += ` — <span class="ok">shortened</span>`;
+    }catch(err){
+      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(err.message || String(err))}`;
+    }
   }
 
   async function doCopy(){
@@ -891,6 +1037,8 @@
 
   function doClear(){
     $("platform").value = "gemini";
+    $("rewriteMode").value = "local";
+    $("rawPrompt").value = "";
 
     $("goalSelect").value = "Promo / Poster";
     $("goalCustom").value = "";
@@ -928,16 +1076,24 @@
 
     $("output").textContent = "Fill the inputs and tap “Generate”.";
     $("status").textContent = "";
+
+    syncRewriteUI();
   }
 
-  // ===== Buttons =====
-  // Password ONLY for Generate + Shorten
-  $("gen").addEventListener("click", () => openPasswordModal(doGenerate));
-  $("shorten").addEventListener("click", () => openPasswordModal(doShorten));
+  // ===== Button wiring =====
+  $("gen").addEventListener("click", () => openPasswordModal(() => { doGenerate(); }));
+  $("shorten").addEventListener("click", () => openPasswordModal(() => { doShorten(); }));
 
-  // No password for Copy + Clear
   $("copy").addEventListener("click", () => { doCopy(); });
   $("clear").addEventListener("click", () => { doClear(); });
+
+  // ===== Init =====
+  syncLmArenaUI();
+  syncOptionalVisibilityRules();
+  syncRewriteUI();
+
+  // Keep optional section visible by default
+  setOptionalVisible(true);
 </script>
 </body>
 </html>
