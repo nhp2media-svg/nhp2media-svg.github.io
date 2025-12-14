@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="author" content="Nathan Histed" />
   <meta name="copyright" content="© 2025 Nathan Histed. All rights reserved." />
-  <title>AI Photo Promo Generator | Pocket Cinema (© Nathan Histed)</title>
+  <title>Pocket Cinema — AI Prompt Learning Tool (© Nathan Histed)</title>
+
   <style>
     :root{
       --bg:#0b0b0f; --text:#fff; --muted:#b5b5c0; --line:#26263a;
       --accent:#6d6dff; --accent2:#8a5cff;
       --ok:#a6ffcf; --warn:#ffd38a; --bad:#ff7d7d;
+      --card:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
     }
     *{box-sizing:border-box}
     body{
@@ -22,28 +24,26 @@
         var(--bg);
       color:var(--text); min-height:100vh;
     }
-    .wrap{max-width:1100px; margin:0 auto; padding:22px 16px 40px;}
+    .wrap{max-width:1120px; margin:0 auto; padding:22px 16px 44px;}
     .top{
       display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
-      padding:14px; border:1px solid var(--line); border-radius:14px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      padding:14px; border:1px solid var(--line); border-radius:14px; background:var(--card);
       backdrop-filter: blur(6px);
     }
-    .brand h1{margin:0; font-size:1.1rem; letter-spacing:.2px;}
+    .brand h1{margin:0; font-size:1.05rem; letter-spacing:.2px;}
     .brand p{margin:.35rem 0 0; color:var(--muted); font-size:.9rem; line-height:1.25;}
     .pill{
       border:1px solid var(--line); color:var(--muted); padding:8px 10px;
       border-radius:999px; font-size:.82rem; background:rgba(0,0,0,.18);
       display:flex; gap:8px; align-items:center;
     }
+    .pill a{color:var(--accent2); text-decoration:none;}
+    .pill a:hover{text-decoration:underline;}
 
     .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
     @media(min-width:980px){ .grid{grid-template-columns:1fr 1fr;} }
 
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid var(--line); border-radius:14px; padding:14px;
-    }
+    .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px;}
     .card h2{margin:0 0 10px; font-size:1rem;}
 
     label{display:block; font-size:.85rem; color:var(--muted); margin:10px 0 6px;}
@@ -51,7 +51,7 @@
       width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
       background:rgba(0,0,0,.22); color:var(--text); outline:none;
     }
-    textarea{min-height:92px; resize:vertical;}
+    textarea{min-height:90px; resize:vertical;}
 
     .row{display:grid; grid-template-columns:1fr; gap:10px;}
     @media(min-width:520px){ .row{grid-template-columns:1fr 1fr;} }
@@ -62,24 +62,87 @@
       color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent2));
       cursor:pointer;
     }
-    button.secondary{
-      background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
-    }
+    button.secondary{background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);}
 
     .out{
       white-space:pre-wrap; word-wrap:break-word; line-height:1.35;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.18);
-      padding:12px; border-radius:12px; min-height:260px;
+      padding:12px; border-radius:12px; min-height:290px;
     }
     .hint{color:var(--muted); font-size:.85rem; margin-top:8px; line-height:1.35;}
     .ok{color:var(--ok)}
     .warn{color:var(--warn)}
     .bad{color:var(--bad)}
-    .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
-    a.smallLink{color:var(--accent2); text-decoration:none;}
-    a.smallLink:hover{text-decoration:underline;}
+    .tiny{font-size:.78rem; color:var(--muted); margin-top:10px; line-height:1.4;}
+    .smallLink{color:var(--accent2); text-decoration:none;}
+    .smallLink:hover{text-decoration:underline;}
 
+    /* Tabs */
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:12px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background:rgba(0,0,0,.18);
+    }
+    .tab{
+      display:flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+      font-size:.86rem;
+      user-select:none;
+    }
+    .tab .ico{opacity:.95}
+    .tab.active{
+      border-color:rgba(109,109,255,.55);
+      box-shadow:0 0 0 2px rgba(109,109,255,.16) inset;
+      background:rgba(109,109,255,.12);
+    }
+
+    /* Guidance panel */
+    .guide{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(0,0,0,.16);
+    }
+    .guideHead{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding:10px 12px;
+      cursor:pointer;
+      background:rgba(255,255,255,.04);
+    }
+    .guideHead strong{font-size:.9rem;}
+    .guideBody{padding:10px 12px; border-top:1px solid rgba(255,255,255,.08);}
+    .guideBody ul{margin:8px 0 0 18px; color:var(--muted); font-size:.88rem; line-height:1.35;}
+    .guideBody .ex{margin-top:10px; padding:10px; border-radius:12px; border:1px dashed rgba(255,255,255,.18); background:rgba(0,0,0,.22); color:#fff; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:.85rem;}
+    .hidden{display:none !important;}
+
+    /* Optional section wrapper */
+    .sectionHead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-top:12px;
+      padding-top:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .sectionHead h3{margin:0; font-size:.95rem;}
+    .optionalWrap{
+      margin-top:10px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background:rgba(0,0,0,.18);
+    }
+
+    /* Chips */
     .switchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;}
     .chip{
       border:1px solid var(--line);
@@ -92,29 +155,8 @@
     }
     .chip input{width:auto; padding:0; margin:0;}
 
-    .sectionHead{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      margin-top:12px;
-      padding-top:10px;
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-    .sectionHead h3{margin:0; font-size:.95rem; color:#fff; letter-spacing:.1px;}
-
-    .optionalWrap{
-      margin-top:10px;
-      padding:12px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      background:rgba(0,0,0,.18);
-    }
-    .hidden{display:none !important;}
-
-    .imgGrid{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:10px;
-      margin-top:10px;
-    }
+    /* Image pack */
+    .imgGrid{display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-top:10px;}
     @media(min-width:520px){ .imgGrid{grid-template-columns:repeat(3, 1fr);} }
     .imgCard{
       border:1px solid rgba(255,255,255,.12);
@@ -123,16 +165,9 @@
       background:rgba(0,0,0,.20);
     }
     .imgTop{display:flex; gap:10px; align-items:flex-start;}
-    .thumb{
-      width:72px; height:72px; object-fit:cover;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.12);
-    }
+    .thumb{width:72px; height:72px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,.12);}
     .imgMeta{flex:1; min-width:0;}
-    .imgName{
-      font-size:.80rem; color:var(--muted);
-      margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
+    .imgName{font-size:.80rem; color:var(--muted); margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
     .miniLabel{margin:0 0 6px; font-size:.78rem; color:var(--muted);}
     .miniInput{
       width:100%;
@@ -142,19 +177,10 @@
       background:rgba(0,0,0,.22);
       color:#fff;
       margin-bottom:8px;
+      font-size:.85rem;
     }
 
-    .footer{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid rgba(255,255,255,.08);
-      color:var(--muted);
-      font-size:.82rem;
-      line-height:1.4;
-      text-align:center;
-    }
-
-    /* ===== Password Modal ===== */
+    /* Password Modal */
     .modalBackdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,.65);
@@ -171,10 +197,7 @@
       padding:14px;
       backdrop-filter: blur(8px);
     }
-    .modalTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-      margin-bottom:10px;
-    }
+    .modalTop{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px;}
     .modalTop h3{margin:0; font-size:1rem;}
     .modalTop p{margin:.35rem 0 0; color:var(--muted); font-size:.88rem; line-height:1.35;}
     .xBtn{
@@ -185,10 +208,18 @@
       padding:8px 10px;
       cursor:pointer;
     }
-    .modalActions{
-      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px;
-    }
+    .modalActions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px;}
     .modalMsg{margin-top:8px; font-size:.85rem;}
+
+    .footer{
+      margin-top:18px;
+      padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:.82rem;
+      line-height:1.4;
+      text-align:center;
+    }
   </style>
 </head>
 
@@ -196,15 +227,38 @@
   <div class="wrap">
     <div class="top">
       <div class="brand">
-        <h1>Pocket Cinema — AI Photo Promo Generator</h1>
-        <p>Created by Nathan Histed. Dual rewrite engine (Local / Gemini BYO key) + reference image pack (1–10).</p>
+        <h1>Pocket Cinema (PCNH) — AI Prompt Learning Tool</h1>
+        <p>Created by Nathan Histed. Tabs teach you how to guide AI with constraints, clarity, and consistency.</p>
       </div>
-      <div class="pill"><span>©</span><strong>Nathan Histed</strong></div>
+      <div class="pill">
+        <span>©</span><strong>Nathan Histed</strong>
+        <span style="opacity:.55">•</span>
+        <a href="./about.html">About</a>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-mode="logo"><span class="ico">▶️</span> Logo</div>
+      <div class="tab" data-mode="enhance"><span class="ico">✨</span> Enhance</div>
+      <div class="tab" data-mode="edit"><span class="ico">🪄</span> Edit</div>
+      <div class="tab" data-mode="album"><span class="ico">💿</span> Album</div>
+      <div class="tab" data-mode="product"><span class="ico">📦</span> Product</div>
+      <div class="tab" data-mode="mockup"><span class="ico">🖼️</span> Mockup</div>
+      <div class="tab" data-mode="redesign"><span class="ico">🔁</span> Redesign</div>
+      <div class="tab" data-mode="scene"><span class="ico">🎬</span> Scene</div>
     </div>
 
     <div class="grid">
       <div class="card">
         <h2>Inputs</h2>
+
+        <div class="guide" id="guide">
+          <div class="guideHead" id="guideToggle">
+            <div><strong>ℹ️ How to get the best results (tap to open)</strong></div>
+            <div style="opacity:.7" id="guideChevron">▾</div>
+          </div>
+          <div class="guideBody hidden" id="guideBody"></div>
+        </div>
 
         <label>Platform</label>
         <select id="platform">
@@ -217,122 +271,26 @@
           <option value="capcut">CapCut</option>
         </select>
 
-        <!-- Rewrite Engine (Dual Mode) -->
-        <div class="sectionHead" style="margin-top:14px;">
-          <h3>Rewrite Engine</h3>
-        </div>
-
-        <label>Rewrite mode</label>
-        <select id="rewriteMode">
-          <option value="off">Off (template only)</option>
-          <option value="local" selected>Local rewrite (free, in-browser)</option>
-          <option value="gemini">Gemini rewrite (BYO key)</option>
-        </select>
-
-        <div id="geminiKeyWrap" class="optionalWrap hidden" style="margin-top:10px;">
-          <label>Gemini API key (stored only in your browser)</label>
-          <input id="geminiKey" type="password" placeholder="Paste your Gemini API key…" autocomplete="off" />
+        <!-- AI Rewrite (optional) -->
+        <div class="optionalWrap" style="margin-top:10px;">
           <div class="row">
             <div>
-              <label>Gemini text model</label>
-              <input id="geminiModel" placeholder="e.g., gemini-2.5-flash" value="gemini-2.5-flash" />
-            </div>
-            <div>
-              <label class="chip" style="margin-top:34px;">
-                <input type="checkbox" id="rememberKey" />
-                <span>Remember key on this device</span>
-              </label>
-            </div>
-          </div>
-          <div class="tiny">
-            Tip: Don’t use a key you can’t rotate. Static sites can’t hide secrets.
-          </div>
-        </div>
-
-        <label>Raw prompt / notes (this gets rewritten)</label>
-        <textarea id="rawPrompt" placeholder="Type messy ideas here — the tool rewrites it into a clean, production-ready prompt…"></textarea>
-
-        <!-- LM Arena settings -->
-        <div id="lmaWrap" class="hidden" style="margin-top:10px;">
-          <label>LM Arena mode</label>
-          <select id="lmaMode">
-            <option value="battle">Battle (unknown model)</option>
-            <option value="direct">Direct (choose model)</option>
-          </select>
-
-          <div id="lmaDirectOnly" class="hidden">
-            <label>LM Arena Model (Direct)</label>
-            <select id="lmaModelMode">
-              <option value="none" selected>None (don’t specify a model)</option>
-              <option value="preset">Choose from presets</option>
-              <option value="custom">Custom (type my own)</option>
-            </select>
-
-            <div id="lmaPresetWrap" class="hidden">
-              <label>Preset models</label>
-              <select id="lmaModelPick">
-                <option value="">(optional) Choose…</option>
-
-                <optgroup label="Google / Gemini / Imagen">
-                  <option>gemini-2.5-flash-image-preview (nano-banana)</option>
-                  <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
-                  <option>imagen-4.0-generate-preview-06-06</option>
-                  <option>imagen-4.0-ultra-generate-preview-06-06</option>
-                </optgroup>
-
-                <optgroup label="OpenAI / Microsoft">
-                  <option>gpt-image-1</option>
-                  <option>gpt-image-1-mini</option>
-                  <option>dall-e-3</option>
-                  <option>mai-image-1</option>
-                </optgroup>
-
-                <optgroup label="ByteDance / Seedream">
-                  <option>seedream-4.5</option>
-                  <option>seedream-4-2k</option>
-                  <option>seedream-4-high-res-fal</option>
-                  <option>seedream-4-fal</option>
-                  <option>seededit-3.0</option>
-                </optgroup>
-
-                <optgroup label="FLUX / Other">
-                  <option>flux-2-pro</option>
-                  <option>flux-2-dev</option>
-                  <option>flux-2-flex</option>
-                  <option>ideogram-v3-quality</option>
-                  <option>stable-diffusion-v35-large</option>
-                </optgroup>
+              <label>Rewrite Engine</label>
+              <select id="rewriteMode">
+                <option value="local" selected>Local Rewrite (free)</option>
+                <option value="gemini">Gemini Rewrite (BYO key)</option>
               </select>
+              <div class="tiny">Local is always available. Gemini is optional and requires your own key.</div>
             </div>
-
-            <div id="lmaCustomWrap" class="hidden">
-              <label>Custom model name</label>
-              <input id="lmaManual" placeholder="Type any model name exactly" />
+            <div id="geminiKeyWrap" class="hidden">
+              <label>Gemini API Key (BYO)</label>
+              <input id="geminiKey" placeholder="Paste your Gemini API key (stored only in your browser session)" />
+              <div class="tiny">Never hardcode keys into GitHub Pages.</div>
             </div>
-
-            <div class="tiny" style="margin-top:8px; line-height:1.4;">
-              Model availability changes on LM Arena.
-              <br />
-              <a class="smallLink" href="https://lmarena.ai/leaderboard/image" target="_blank">View current LM Arena Image Models (Text-to-Image)</a>
-              <br />
-              <a class="smallLink" href="https://lmarena.ai/leaderboard/image-edit" target="_blank">View LM Arena Image Edit Models</a>
-            </div>
-          </div>
-
-          <div class="tiny">
-            Battle mode stays model-agnostic. Direct mode optionally specifies a model.
           </div>
         </div>
 
         <div class="switchRow">
-          <label class="chip">
-            <input type="checkbox" id="onlyFilled" />
-            <span>Only include fields that are filled</span>
-          </label>
-          <label class="chip hidden" id="hideOptionalChip">
-            <input type="checkbox" id="hideOptional" checked />
-            <span>Hide optional fields until used</span>
-          </label>
           <label class="chip">
             <input type="checkbox" id="strict120" />
             <span>Strict 120-word mode (Sora-friendly)</span>
@@ -343,39 +301,55 @@
           </label>
         </div>
 
-        <div class="tiny">
-          Optional fields can be <strong>None</strong>, a preset, or <strong>Custom…</strong>.
+        <label>Plain & Simple starter (optional, recommended)</label>
+        <input id="plainStarter" placeholder="One sentence. Example: 'Neon Pocket Cinema logo with NH play icon and PROMPT’r tagline'" />
+        <div class="tiny">If you’re stuck, just write one sentence. The rewrite engine will do the rest.</div>
+
+        <label>Raw notes (optional)</label>
+        <textarea id="rawNotes" placeholder="Any extra thoughts, references, constraints, words you want included…"></textarea>
+
+        <!-- Album required fields -->
+        <div id="albumReqWrap" class="optionalWrap hidden">
+          <div class="row">
+            <div>
+              <label>Artist Name <span class="warn">*</span></label>
+              <input id="albumArtist" placeholder="Required for Album tab" />
+            </div>
+            <div>
+              <label>Title <span class="warn">*</span></label>
+              <input id="albumTitle" placeholder="Required for Album tab" />
+            </div>
+          </div>
+          <div class="tiny">Album covers are always square (1:1). Artist + Title must be spelled exactly.</div>
         </div>
 
-        <!-- Goal -->
-        <label>Goal</label>
-        <select id="goalSelect">
-          <option value="Promo / Poster" selected>Promo / Poster</option>
-          <option value="">None (omit)</option>
-          <option value="Product / E-commerce">Product / E-commerce</option>
-          <option value="YouTube Thumbnail">YouTube Thumbnail</option>
-          <option value="Editorial / Paparazzi">Editorial / Paparazzi</option>
-          <option value="__custom__">Custom…</option>
-        </select>
-        <input id="goalCustom" class="hidden" placeholder="Type your goal…" />
+        <!-- Framing control (Edit / Redesign) -->
+        <div id="frameWrap" class="optionalWrap hidden">
+          <label>Reference Framing</label>
+          <select id="framingMode">
+            <option value="same" selected>Match original framing/size (most consistent)</option>
+            <option value="slight">Slightly different angle (still consistent)</option>
+          </select>
+          <div class="tiny">Only two options by design (prevents AI drift).</div>
+        </div>
 
         <div class="row">
           <div>
-            <label>Subject (optional helper)</label>
-            <input id="subject" placeholder="Used as extra guidance, but rewrite focuses on Raw Prompt." />
+            <label>Subject</label>
+            <input id="subject" placeholder="e.g., Pocket Cinema wordmark, a portrait photo, product, scene concept" />
           </div>
           <div>
-            <label>Setting / Background (optional helper)</label>
-            <input id="setting" placeholder="Used as extra guidance, but rewrite focuses on Raw Prompt." />
+            <label>Setting / Background</label>
+            <input id="setting" placeholder="e.g., dark studio, neon city, seamless backdrop, textured paper" />
           </div>
         </div>
 
         <div class="sectionHead">
-          <h3>Optional fields</h3>
-          <button class="secondary" id="toggleOptionalBtn" type="button">Hide</button>
+          <h3>Creative controls</h3>
+          <button class="secondary" id="toggleCreative" type="button">Hide</button>
         </div>
 
-        <div id="optionalWrap" class="optionalWrap">
+        <div id="creativeWrap" class="optionalWrap">
           <div class="row">
             <div>
               <label>Vibe</label>
@@ -418,6 +392,7 @@
                 <option value="__custom__">Custom…</option>
               </select>
               <input id="lensCustom" class="hidden" placeholder="Type your camera/lens…" />
+              <div class="tiny" id="lensNote">Tip: Logos/Album covers usually don’t need lens language.</div>
             </div>
 
             <div>
@@ -431,6 +406,7 @@
                 <option value="__custom__">Custom…</option>
               </select>
               <input id="arCustom" class="hidden" placeholder="Type your aspect ratio…" />
+              <div class="tiny" id="arNote">Album tab forces 1:1 automatically.</div>
             </div>
           </div>
 
@@ -449,17 +425,17 @@
 
             <div>
               <label>Text overlay (optional)</label>
-              <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
+              <input id="overlay" placeholder='e.g., "ULTIMATE IMAGE PROMPT’r" bottom-center, bold sans' />
             </div>
           </div>
 
-          <label>Key details (optional helper)</label>
-          <textarea id="details" placeholder="Extra constraints; rewrite focuses on Raw Prompt."></textarea>
+          <label>Key details (optional)</label>
+          <textarea id="details" placeholder="Colors, layout notes, typography intent, props, materials, do/don’t…"></textarea>
         </div>
 
-        <label>Reference Images (1–10)</label>
+        <label>Reference Images (0–10)</label>
         <input id="imgFiles" type="file" accept="image/*" multiple />
-        <div class="tiny">Upload up to 10 images. Label each image to make the rewrite smarter (no server uploads).</div>
+        <div class="tiny">Images stay in your browser. Label them below to make prompts smarter.</div>
         <div id="imgPreview" class="imgGrid"></div>
 
         <div class="btns">
@@ -470,22 +446,19 @@
         </div>
 
         <div class="tiny">
-          Tip: Use “a person” unless it’s you/your owned assets. Avoid naming real people you don’t have rights to.
+          Tip: For real people, use only your own/owned images and avoid naming people you don’t have rights to.
         </div>
       </div>
 
       <div class="card">
         <h2>Output</h2>
-        <div id="output" class="out">Fill the inputs and tap “Generate”.</div>
+        <div id="output" class="out">Pick a tab, fill what you can, then tap “Generate”.</div>
         <div id="status" class="hint"></div>
-        <div class="hint">
-          <span class="ok">✓</span> Client-side only. Images stay in your browser.
-        </div>
+        <div class="hint"><span class="ok">✓</span> Client-side only. Images stay in your browser.</div>
 
         <div class="footer">
-          © 2025 Nathan Histed — Pocket Cinema. All rights reserved.
-          <br/>
-          This tool and its UI/prompt formats are proprietary to Nathan Histed.
+          © 2025 Nathan Histed — Pocket Cinema (PCNH). All rights reserved.<br/>
+          This tool, its UI patterns, and prompt formats are proprietary to Nathan Histed.
         </div>
       </div>
     </div>
@@ -504,7 +477,6 @@
 
       <label>Password</label>
       <input id="pwInput" type="password" placeholder="Enter password…" autocomplete="off" />
-
       <div id="pwMsg" class="modalMsg tiny"></div>
 
       <div class="modalActions">
@@ -517,7 +489,7 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  // ===== Password Gate (only for Generate + Shorten) =====
+  // ===== Password Gate (Generate + Shorten only) =====
   const ACCESS_PASSWORD = "PROMPT";
   let pendingAction = null;
 
@@ -555,128 +527,10 @@
     if(e.target === $("pwBackdrop")) closePasswordModal();
   });
 
+  // ===== Helpers =====
   function wordCount(text){
     return text.trim().split(/\s+/).filter(Boolean).length;
   }
-
-  // ===== Rewrite Mode UI =====
-  function syncRewriteUI(){
-    const mode = $("rewriteMode").value;
-    $("geminiKeyWrap").classList.toggle("hidden", mode !== "gemini");
-    if(mode === "gemini"){
-      // restore remembered key if set
-      const saved = localStorage.getItem("pc_gemini_key") || "";
-      if(saved && !$("geminiKey").value) $("geminiKey").value = saved;
-    }
-  }
-  $("rewriteMode").addEventListener("change", syncRewriteUI);
-
-  // remember key toggle
-  $("rememberKey").addEventListener("change", () => {
-    if(!$("rememberKey").checked){
-      localStorage.removeItem("pc_gemini_key");
-    }else{
-      const k = ($("geminiKey").value || "").trim();
-      if(k) localStorage.setItem("pc_gemini_key", k);
-    }
-  });
-  $("geminiKey").addEventListener("input", () => {
-    if($("rememberKey").checked){
-      const k = ($("geminiKey").value || "").trim();
-      if(k) localStorage.setItem("pc_gemini_key", k);
-    }
-  });
-
-  // ===== LM Arena UI =====
-  function syncLmArenaUI(){
-    const isLma = $("platform").value === "lmarena";
-    $("lmaWrap").classList.toggle("hidden", !isLma);
-
-    const direct = $("lmaMode").value === "direct";
-    $("lmaDirectOnly").classList.toggle("hidden", !(isLma && direct));
-
-    syncLmaModelModeUI();
-  }
-  $("platform").addEventListener("change", syncLmArenaUI);
-  $("lmaMode").addEventListener("change", syncLmArenaUI);
-
-  function syncLmaModelModeUI(){
-    const isLma = $("platform").value === "lmarena";
-    const direct = $("lmaMode").value === "direct";
-    const show = isLma && direct;
-
-    const mode = $("lmaModelMode") ? $("lmaModelMode").value : "none";
-    $("lmaPresetWrap").classList.toggle("hidden", !(show && mode === "preset"));
-    $("lmaCustomWrap").classList.toggle("hidden", !(show && mode === "custom"));
-  }
-  $("lmaModelMode").addEventListener("change", syncLmaModelModeUI);
-
-  // ===== Optional fields UI =====
-  let optionalVisible = true;
-  function setOptionalVisible(isVisible){
-    optionalVisible = isVisible;
-    $("optionalWrap").classList.toggle("hidden", !isVisible);
-    $("toggleOptionalBtn").textContent = isVisible ? "Hide" : "Show";
-  }
-  $("toggleOptionalBtn").addEventListener("click", () => setOptionalVisible(!optionalVisible));
-
-  function syncOptionalVisibilityRules(){
-    const onlyFilled = $("onlyFilled").checked;
-    $("hideOptionalChip").classList.toggle("hidden", !onlyFilled);
-    if(!onlyFilled) return;
-
-    const hideOpt = $("hideOptional").checked;
-    setOptionalVisible(!hideOpt);
-  }
-  $("onlyFilled").addEventListener("change", syncOptionalVisibilityRules);
-  $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
-
-  // ===== Custom reveal for single-select fields =====
-  function bindCustomSelect(selectId, customId){
-    const sel = $(selectId);
-    const custom = $(customId);
-
-    function sync(){
-      const isCustom = sel.value === "__custom__";
-      custom.classList.toggle("hidden", !isCustom);
-
-      if(isCustom){
-        if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
-          setOptionalVisible(true);
-          $("hideOptional").checked = false;
-          syncOptionalVisibilityRules();
-        }
-        setTimeout(() => custom.focus(), 50);
-      }
-    }
-    sel.addEventListener("change", sync);
-    sync();
-  }
-
-  bindCustomSelect("goalSelect","goalCustom");
-  bindCustomSelect("vibeSelect","vibeCustom");
-  bindCustomSelect("lightingSelect","lightingCustom");
-  bindCustomSelect("lensSelect","lensCustom");
-  bindCustomSelect("arSelect","arCustom");
-  bindCustomSelect("qualitySelect","qualityCustom");
-
-  function selectValue(selectId, customId){
-    const sel = $(selectId).value;
-    if(sel === "") return "";
-    if(sel === "__custom__") return ($(customId).value || "").trim();
-    return sel.trim();
-  }
-
-  // ===== Image pack =====
-  let imagePack = []; // {name, dataUrl, role, keep, change}
-
-  function clampImages(files){ return Array.from(files || []).slice(0, 10); }
-
-  function roleOption(label, current){
-    const selected = (label === current) ? "selected" : "";
-    return `<option ${selected}>${label}</option>`;
-  }
-
   function escapeHtml(str){
     return String(str)
       .replaceAll("&","&amp;")
@@ -685,7 +539,167 @@
       .replaceAll('"',"&quot;")
       .replaceAll("'","&#039;");
   }
+  function bindCustomSelect(selectId, customId){
+    const sel = $(selectId), custom = $(customId);
+    function sync(){
+      const isCustom = sel.value === "__custom__";
+      custom.classList.toggle("hidden", !isCustom);
+      if(isCustom) setTimeout(() => custom.focus(), 50);
+    }
+    sel.addEventListener("change", sync);
+    sync();
+  }
+  function selectValue(selectId, customId){
+    const sel = $(selectId).value;
+    if(sel === "") return "";
+    if(sel === "__custom__") return ($(customId).value || "").trim();
+    return sel.trim();
+  }
 
+  bindCustomSelect("vibeSelect","vibeCustom");
+  bindCustomSelect("lightingSelect","lightingCustom");
+  bindCustomSelect("lensSelect","lensCustom");
+  bindCustomSelect("arSelect","arCustom");
+  bindCustomSelect("qualitySelect","qualityCustom");
+
+  // ===== Modes (tabs) =====
+  const GUIDES = {
+    logo: {
+      title: "LOGO / TYPOGRAPHY",
+      focus: ["Clear brand name", "Readable typography", "Simple geometry", "Icon + wordmark balance"],
+      avoid: ["Photorealism", "Faces/hands", "Busy backgrounds", "Misspelled/warped text"],
+      example: "Minimal logo for POCKET CINEMA with a play-button icon and integrated NH monogram, clean vector geometry, sharp typography, dark background with subtle ultraviolet neon accent."
+    },
+    enhance: {
+      title: "PHOTO ENHANCE (DETAIL-FOCUSED)",
+      focus: ["Micro-detail clarity", "Natural texture (skin/fabric/surfaces)", "Balanced highlights/shadows", "Natural sharpening + noise reduction"],
+      avoid: ["Changing identity", "Changing crop/angle", "Adding/removing objects", "Over-smoothing (plastic)"],
+      example: "Enhance only: restore fine detail and natural texture, improve clarity and dynamic range, reduce noise naturally, preserve original framing and identity exactly."
+    },
+    edit: {
+      title: "PHOTO EDIT (MANIPULATION)",
+      focus: ["Controlled changes", "Seamless blending", "Matched lighting/perspective", "Respect the reference image"],
+      avoid: ["Major framing changes", "Identity drift", "Random additions", "Mismatched shadows/scale"],
+      example: "Replace background with a neon-lit city alley, keep the subject identical, match original framing, maintain realistic lighting and perspective."
+    },
+    album: {
+      title: "ALBUM COVER",
+      focus: ["Strong central concept", "Artist + Title clarity", "Cohesive mood", "Print-ready composition"],
+      avoid: ["Non-square layouts", "Cluttered typography", "Unreadable text", "Busy backgrounds behind text"],
+      example: "Square (1:1) album cover for artist 'Nathan Histed' titled 'Pocket Cinema', dark cinematic mood, ultraviolet neon accents, bold clean typography, print-ready layout."
+    },
+    product: {
+      title: "PRODUCT DESIGN",
+      focus: ["Accurate proportions", "Material realism", "Clean silhouette", "Premium presentation"],
+      avoid: ["Impossible geometry", "Warped logos/text", "Unrealistic materials", "Noisy clutter"],
+      example: "Premium product design for a minimalist camera accessory, matte black aluminum, clean edges, realistic lighting, isolated on a dark background."
+    },
+    mockup: {
+      title: "MOCKUP",
+      focus: ["Correct perspective", "Realistic placement", "Natural shadows/lighting", "Believable materials"],
+      avoid: ["Floating designs", "Warped prints", "Incorrect angles", "Overly glossy glare"],
+      example: "T-shirt mockup showing the logo printed on black fabric, realistic folds, natural shadows, accurate print texture, studio lighting."
+    },
+    redesign: {
+      title: "REDESIGN",
+      focus: ["Improve clarity/quality", "Preserve original intent", "Modernize without losing identity", "Clean structure"],
+      avoid: ["Changing core concept", "Random style shifts", "Overcomplication", "Losing recognizability"],
+      example: "Redesign this logo to be more modern and minimal while keeping the original concept and name recognizable."
+    },
+    scene: {
+      title: "SCENE / CONCEPT",
+      focus: ["Mood and storytelling", "Composition and lighting", "Cinematic realism", "Clear subject focus"],
+      avoid: ["Visual clutter", "Conflicting styles", "Overly vague prompts", "Too many elements"],
+      example: "Cinematic nighttime scene of a creator under neon lights, moody atmosphere, shallow depth of field, realistic lighting and texture."
+    }
+  };
+
+  let currentMode = "logo";
+  let guideOpen = false;
+
+  function setGuide(mode){
+    const g = GUIDES[mode] || GUIDES.scene;
+    const body = `
+      <div style="color:#fff; font-weight:800; letter-spacing:.2px;">${escapeHtml(g.title)}</div>
+      <ul><li><strong style="color:#fff;">Focus on:</strong> ${escapeHtml(g.focus.join("; "))}</li></ul>
+      <ul><li><strong style="color:#fff;">Avoid:</strong> ${escapeHtml(g.avoid.join("; "))}</li></ul>
+      <div class="ex"><strong>Example:</strong> ${escapeHtml(g.example)}</div>
+    `;
+    $("guideBody").innerHTML = body;
+  }
+
+  $("guideToggle").addEventListener("click", () => {
+    guideOpen = !guideOpen;
+    $("guideBody").classList.toggle("hidden", !guideOpen);
+    $("guideChevron").textContent = guideOpen ? "▴" : "▾";
+  });
+
+  function syncModeUI(){
+    // Album required
+    const isAlbum = currentMode === "album";
+    $("albumReqWrap").classList.toggle("hidden", !isAlbum);
+
+    // Framing for edit/redesign
+    const showFrame = ["edit","redesign"].includes(currentMode);
+    $("frameWrap").classList.toggle("hidden", !showFrame);
+
+    // Force AR 1:1 for album
+    if(isAlbum){
+      $("arSelect").value = "1:1";
+      $("arCustom").value = "";
+      $("arCustom").classList.add("hidden");
+      $("arSelect").disabled = true;
+      $("arNote").textContent = "Album tab locks AR to 1:1.";
+    } else {
+      $("arSelect").disabled = false;
+      $("arNote").textContent = "Album tab forces 1:1 automatically.";
+    }
+
+    // Lens note for logo/album
+    $("lensNote").textContent = (["logo","album"].includes(currentMode))
+      ? "Tip: Logos/Album covers usually don’t need lens language."
+      : "Tip: Lens language helps photography/scene realism.";
+
+    // Guide content
+    setGuide(currentMode);
+  }
+
+  // Tabs click
+  $("tabs").querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => {
+      $("tabs").querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      currentMode = t.getAttribute("data-mode");
+      syncModeUI();
+      $("status").innerHTML = `<span class="ok">✓</span> Mode set to <strong>${escapeHtml(GUIDES[currentMode].title)}</strong>`;
+    });
+  });
+
+  // ===== Creative controls hide/show =====
+  let creativeVisible = true;
+  function setCreativeVisible(v){
+    creativeVisible = v;
+    $("creativeWrap").classList.toggle("hidden", !v);
+    $("toggleCreative").textContent = v ? "Hide" : "Show";
+  }
+  $("toggleCreative").addEventListener("click", () => setCreativeVisible(!creativeVisible));
+
+  // ===== Gemini key visibility =====
+  function syncRewriteUI(){
+    const isGemini = $("rewriteMode").value === "gemini";
+    $("geminiKeyWrap").classList.toggle("hidden", !isGemini);
+  }
+  $("rewriteMode").addEventListener("change", syncRewriteUI);
+  syncRewriteUI();
+
+  // ===== Image pack (local only) =====
+  let imagePack = []; // {name, dataUrl, role, keep, change}
+
+  function clampImages(files){ return Array.from(files || []).slice(0, 10); }
+  function roleOption(label, current){
+    const selected = (label === current) ? "selected" : "";
+    return `<option ${selected}>${label}</option>`;
+  }
   function renderImagePack(){
     const wrap = $("imgPreview");
     wrap.innerHTML = "";
@@ -737,194 +751,337 @@
         r.onload = () => res(r.result);
         r.readAsDataURL(f);
       });
-      imagePack.push({ name: f.name || "image", dataUrl, role: "Primary subject/identity", keep: "", change: "" });
+      imagePack.push({
+        name: f.name || "image",
+        dataUrl,
+        role: "Primary subject/identity",
+        keep: "",
+        change: ""
+      });
     }
     renderImagePack();
   });
 
-  function buildImageInstructions(platform){
+  function buildImageInstructions(){
     if(!imagePack.length) return "";
-
     const lines = imagePack.map((img, i) => {
       const keep = img.keep ? ` Keep: ${img.keep}.` : "";
       const change = img.change ? ` Change: ${img.change}.` : "";
       return `Image ${i+1} — Role: ${img.role}.${keep}${change}`.trim();
     });
-
-    if(platform === "capcut") return ["Reference Images (CapCut workflow):","Use Image 1 as the cover/frame reference if applicable.", ...lines].join("\n");
-    if(platform === "sora2") return ["Reference Images (Sora 2):","Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.", ...lines].join("\n");
-    if(platform === "lmarena") return ["Reference Images (LM Arena):","If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.", ...lines].join("\n");
-    if(platform === "gemini") return ["Reference Images (Gemini):","Attach images in order. Use Image 1 as primary subject reference; follow roles below.", ...lines].join("\n");
-    if(platform === "grok") return ["Reference Images (Grok):","Attach images in order. Follow these roles/constraints:", ...lines].join("\n");
-    if(platform === "meta") return ["Reference Images (Meta AI):","Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.", ...lines].join("\n");
-    return ["Reference Images:","Attach images in order. Follow these roles and constraints:", ...lines].join("\n");
+    return ["Reference Images (local):", ...lines].join("\n");
   }
 
-  // ===== Local rewrite (free) =====
-  function rewriteLocal(raw, opts){
-    let t = (raw || "").trim();
-    if(!t) t = "";
+  // ===== Locked prompt rules by mode =====
+  function modeRules(mode){
+    const verbose = $("verbose").checked;
 
-    // Basic cleanup
-    t = t
-      .replace(/\s{2,}/g, " ")
-      .replace(/[“”]/g,'"')
-      .replace(/[’]/g,"'")
-      .trim();
-
-    // Tiny “promptifier”
-    t = t
-      .replace(/\bmake it\b/gi, "create")
-      .replace(/\bmake this\b/gi, "create")
-      .replace(/\breally\b/gi, "")
-      .replace(/\bvery\b/gi, "")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-
-    // If user wrote fragments, we still want a usable base sentence
-    if(t && !/[.!?]$/.test(t)) t += ".";
-
-    // Build a polished, cinematic core prompt
-    const extras = [];
-    if(opts.goal) extras.push(`Goal: ${opts.goal}`);
-    if(opts.subjectHelper) extras.push(`Subject: ${opts.subjectHelper}`);
-    if(opts.settingHelper) extras.push(`Setting: ${opts.settingHelper}`);
-    if(opts.vibe) extras.push(`Style: ${opts.vibe}`);
-    if(opts.lighting) extras.push(`Lighting: ${opts.lighting}`);
-    if(opts.lens) extras.push(`Camera: ${opts.lens}`);
-    if(opts.quality) extras.push(`Quality: ${opts.quality}`);
-    if(opts.ar) extras.push(`Aspect ratio: ${opts.ar}`);
-    if(opts.overlay) extras.push(`Text overlay: ${opts.overlay}`);
-    if(opts.detailsHelper) extras.push(`Constraints: ${opts.detailsHelper}`);
-
-    const core = t ? `Rewrite + enhance this into a production-ready image prompt: ${t}` : "Create a production-ready image prompt from the provided fields.";
-    const joined = [core, extras.length ? extras.join(" | ") : ""].filter(Boolean).join("\n");
-
-    // Return a “rewritten” prompt (still local, but much cleaner than raw + dropdown paste)
-    return joined
-      .replace(/\s{2,}/g, " ")
-      .trim();
-  }
-
-  // ===== Gemini rewrite (BYO key) =====
-  async function rewriteGemini(raw, opts){
-    const key = ($("geminiKey").value || "").trim();
-    const model = ($("geminiModel").value || "gemini-2.5-flash").trim();
-    if(!key) throw new Error("Missing Gemini API key.");
-
-    // Keep prompt short + consistent; enforce 120 if requested
-    const target = opts.strict120 ? "UNDER 120 WORDS" : "concise but detailed";
-    const sys = `You are Pocket Cinema’s prompt copywriter. Rewrite messy user notes into a single, clean, production-ready image prompt. Keep it ${target}. No disclaimers. No bullet lists. Output ONLY the rewritten prompt text.`;
-
-    const guidance = [
-      opts.goal ? `Goal: ${opts.goal}` : "",
-      opts.subjectHelper ? `Subject: ${opts.subjectHelper}` : "",
-      opts.settingHelper ? `Setting: ${opts.settingHelper}` : "",
-      opts.vibe ? `Style/Vibe: ${opts.vibe}` : "",
-      opts.lighting ? `Lighting: ${opts.lighting}` : "",
-      opts.lens ? `Camera/Lens: ${opts.lens}` : "",
-      opts.quality ? `Quality: ${opts.quality}` : "",
-      opts.ar ? `Aspect Ratio: ${opts.ar}` : "",
-      opts.overlay ? `Text overlay: ${opts.overlay}` : "",
-      opts.detailsHelper ? `Extra constraints: ${opts.detailsHelper}` : ""
-    ].filter(Boolean).join("\n");
-
-    const userText = (raw || "").trim() || "(No raw notes provided — create a strong prompt from the fields.)";
-
-    const body = {
-      contents: [
-        { role: "user", parts: [{ text: `${sys}\n\nUSER NOTES:\n${userText}\n\nFIELDS:\n${guidance}` }] }
-      ],
-      generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: opts.strict120 ? 240 : 600
-      }
+    const base = {
+      constraints: [],
+      avoid: "",
+      useNegativeLine: true
     };
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
-    const resp = await fetch(url, {
+    if(mode === "logo"){
+      base.constraints.push(
+        "Design constraints: clean vector geometry, sharp typography, correct spelling, balanced spacing, high legibility.",
+        "No photorealism. No faces. Minimal shapes. Brand-ready mark."
+      );
+      base.avoid = "Avoid: distorted letters, misspellings, messy gradients, random extra symbols, low-res edges.";
+      base.useNegativeLine = false;
+      return base;
+    }
+
+    if(mode === "album"){
+      const artist = ($("albumArtist").value || "").trim();
+      const title = ($("albumTitle").value || "").trim();
+      base.constraints.push(
+        "Album cover rules: square 1:1 composition, print-ready layout, strong focal point, intentional typography.",
+        artist && title ? `Text on cover (exact spelling): Artist "${artist}", Title "${title}".` : "Text on cover: Artist + Title required."
+      );
+      base.avoid = "Avoid: unreadable typography, clutter behind text, non-square layouts, misspellings, low-res artifacts.";
+      return base;
+    }
+
+    if(mode === "enhance"){
+      base.constraints.push(
+        "Enhancement only: do not change identity, do not add/remove objects, do not change pose/angle/crop.",
+        verbose
+          ? "Detail focus: recover micro-texture (skin/fabric/surfaces), natural sharpening, noise reduction, improved dynamic range, realistic color balance."
+          : "Detail focus: natural clarity, texture, noise reduction, balanced tone."
+      );
+      base.avoid = "Avoid: plastic skin, heavy smoothing, HDR halos, invented details, face changes, cropping changes.";
+      return base;
+    }
+
+    if(mode === "edit" || mode === "redesign"){
+      const framing = $("framingMode").value;
+      base.constraints.push(
+        "Editing rules: match lighting, perspective, and texture for seamless compositing.",
+        framing === "same"
+          ? "Framing rule: match original framing, crop, and output size exactly."
+          : "Framing rule: allow a slightly different angle while keeping scale/identity consistent; avoid drastic aspect ratio changes."
+      );
+      base.avoid = "Avoid: jagged cutouts, halos, mismatched shadows, scale errors, identity drift, AI artifacts.";
+      return base;
+    }
+
+    if(mode === "product"){
+      base.constraints.push(
+        "Product design: accurate proportions, premium materials, clean silhouette, believable reflections and surfaces.",
+        "Presentation: uncluttered composition that highlights the product."
+      );
+      base.avoid = "Avoid: impossible geometry, melted surfaces, warped logos/text, inconsistent reflections, noisy backgrounds.";
+      return base;
+    }
+
+    if(mode === "mockup"){
+      base.constraints.push(
+        "Mockup rules: correct perspective mapping, realistic material/print texture, natural lighting and shadows.",
+        "Design must look applied (not floating). Keep typography/logos undistorted."
+      );
+      base.avoid = "Avoid: warped placement, floating prints, incorrect perspective, extreme glare, unreadable text.";
+      return base;
+    }
+
+    // scene default
+    base.constraints.push(
+      "Scene rules: coherent lighting, believable materials, strong composition, clear subject focus."
+    );
+    base.avoid = "Avoid: warped text, heavy blur, low-res artifacts, inconsistent lighting, clutter.";
+    return base;
+  }
+
+  function validateRequired(){
+    if(currentMode === "album"){
+      const a = ($("albumArtist").value || "").trim();
+      const t = ($("albumTitle").value || "").trim();
+      if(!a || !t){
+        $("status").innerHTML = `<span class="bad">Album requires Artist Name + Title.</span>`;
+        $("albumReqWrap").classList.remove("hidden");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===== Locked rewrite: local + optional Gemini =====
+  function gatherFields(){
+    const subjectRaw = ($("subject").value || "").trim();
+    const settingRaw = ($("setting").value || "").trim();
+    const plain = ($("plainStarter").value || "").trim();
+    const notes = ($("rawNotes").value || "").trim();
+
+    const vibe = selectValue("vibeSelect","vibeCustom");
+    const lighting = selectValue("lightingSelect","lightingCustom");
+    const lens = selectValue("lensSelect","lensCustom");
+    const quality = selectValue("qualitySelect","qualityCustom");
+    const ar = selectValue("arSelect","arCustom");
+    const overlay = ($("overlay").value || "").trim();
+    const details = ($("details").value || "").trim();
+
+    const albumArtist = ($("albumArtist").value || "").trim();
+    const albumTitle = ($("albumTitle").value || "").trim();
+
+    return {
+      subject: subjectRaw || "",
+      setting: settingRaw || "",
+      plain, notes,
+      vibe, lighting, lens, quality, ar,
+      overlay, details,
+      albumArtist, albumTitle
+    };
+  }
+
+  function localRewrite(mode, fields){
+    // This is the locked, mode-safe rewrite.
+    const r = modeRules(mode);
+    const parts = [];
+
+    // Use a strong anchor: either subject/setting, or plain starter
+    const anchor = fields.plain || fields.subject || "a subject";
+    const setting = fields.setting || "a fitting environment";
+
+    // Mode-aware header
+    const header = {
+      logo: "Logo design prompt",
+      enhance: "Photo enhancement prompt",
+      edit: "Photo manipulation/edit prompt",
+      album: "Album cover prompt",
+      product: "Product design prompt",
+      mockup: "Mockup prompt",
+      redesign: "Redesign prompt",
+      scene: "Scene/concept prompt"
+    }[mode] || "Prompt";
+
+    parts.push(`${header} (Pocket Cinema / PCNH — © Nathan Histed).`);
+
+    // Required album text
+    if(mode === "album"){
+      parts.push(`Artist: ${fields.albumArtist}. Title: ${fields.albumTitle}.`);
+      parts.push("Aspect ratio: 1:1 (square album cover).");
+    }
+
+    // Primary intent
+    parts.push(`Core intent: ${anchor}.`);
+    parts.push(`Setting/background: ${setting}.`);
+
+    // Creative controls (optional)
+    if(fields.vibe) parts.push(`Vibe/style: ${fields.vibe}.`);
+    if(fields.lighting) parts.push(`Lighting: ${fields.lighting}.`);
+
+    // Lens language is often noise for logo/album/enhance; keep only if user explicitly set it AND mode benefits
+    const lensAllowed = !["logo","album"].includes(mode);
+    if(fields.lens && lensAllowed) parts.push(`Camera/lens: ${fields.lens}.`);
+
+    if(fields.quality) parts.push(`Quality: ${fields.quality}.`);
+
+    // AR rules: album forced; enhance/edit should preserve unless user asked
+    if(mode !== "album" && fields.ar){
+      parts.push(`Aspect ratio: ${fields.ar}.`);
+    }
+
+    if(fields.overlay){
+      parts.push(`Text overlay: ${fields.overlay}.`);
+    }
+
+    // Mode rules + constraints
+    r.constraints.forEach(c => parts.push(c));
+
+    // Reference framing options are already in constraints; add a gentle reminder if images exist
+    const imgBlock = buildImageInstructions();
+    if(imgBlock) parts.push(imgBlock);
+
+    if(fields.details) parts.push(`Must include: ${fields.details}.`);
+    if(fields.notes) parts.push(`Notes: ${fields.notes}.`);
+
+    // “Avoid” guidance (negative line only where useful)
+    if(r.useNegativeLine && r.avoid) parts.push(`Avoid: ${r.avoid.replace(/^Avoid:\s*/i,"")}`);
+    else if(!r.useNegativeLine && r.avoid) parts.push(`Avoid list: ${r.avoid.replace(/^Avoid:\s*/i,"")}`);
+
+    return parts.join("\n");
+  }
+
+  async function geminiRewrite(mode, fields){
+    const key = ($("geminiKey").value || "").trim();
+    if(!key) throw new Error("Missing Gemini API key.");
+
+    const r = modeRules(mode);
+    const imgBlock = buildImageInstructions();
+
+    const system = `
+You are Pocket Cinema (PCNH), a learning-first prompt rewriting assistant.
+Rewrite user inputs into a single, clear, high-quality prompt for the selected mode.
+Rules:
+- Respect the mode constraints.
+- Keep it concise but strong.
+- Do not invent facts.
+- If mode is Enhance: enhancement only; no identity/crop changes.
+- If mode is Album: enforce 1:1 and include Artist + Title exactly.
+- If mode is Logo: no photorealism; focus on vector/typography; correct spelling.
+Return plain text only (no markdown).
+`.trim();
+
+    const payload = {
+      contents: [{
+        role: "user",
+        parts: [{
+          text:
+`MODE: ${mode}
+PLAIN STARTER: ${fields.plain || ""}
+SUBJECT: ${fields.subject || ""}
+SETTING: ${fields.setting || ""}
+VIBE: ${fields.vibe || ""}
+LIGHTING: ${fields.lighting || ""}
+LENS: ${fields.lens || ""}
+QUALITY: ${fields.quality || ""}
+ASPECT RATIO: ${mode==="album" ? "1:1 (locked)" : (fields.ar || "")}
+OVERLAY: ${fields.overlay || ""}
+DETAILS: ${fields.details || ""}
+NOTES: ${fields.notes || ""}
+ALBUM ARTIST: ${fields.albumArtist || ""}
+ALBUM TITLE: ${fields.albumTitle || ""}
+
+CONSTRAINTS:
+- ${r.constraints.join("\n- ")}
+
+AVOID:
+- ${r.avoid || "(none)"}
+
+${imgBlock ? ("\n" + imgBlock) : ""}
+`
+        }]
+      }],
+      systemInstruction: { role: "system", parts: [{ text: system }] },
+      generationConfig: { temperature: 0.35, maxOutputTokens: 700 }
+    };
+
+    // Gemini Generative Language API endpoint (key in querystring)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
+
+    const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
     });
 
-    if(!resp.ok){
-      let detail = "";
-      try{ detail = await resp.text(); }catch(e){}
-      throw new Error(`Gemini error (${resp.status}). ${detail ? detail.slice(0, 220) : ""}`.trim());
+    if(!res.ok){
+      const t = await res.text().catch(()=> "");
+      throw new Error(`Gemini error (${res.status}): ${t || "Request failed"}`);
     }
 
-    const data = await resp.json();
-    const text =
-      data?.candidates?.[0]?.content?.parts
-        ?.map(p => p.text || "")
-        .join("")
-        .trim() || "";
-
-    if(!text) throw new Error("Gemini returned empty text.");
-    return text;
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    return (text || "").trim();
   }
 
-  // ===== Prompt building =====
-  function lmArenaHeader(){
-    const mode = $("lmaMode").value;
-    if(mode === "battle") return "LM ARENA (Battle / unknown model)";
-    const modelMode = $("lmaModelMode").value;
-    if(modelMode === "none") return "LM Arena Direct";
-    if(modelMode === "custom"){
-      const manual = ($("lmaManual").value || "").trim();
-      return manual ? `LM Arena Direct — Model: ${manual}` : "LM Arena Direct";
-    }
-    const picked = ($("lmaModelPick").value || "").trim();
-    return picked ? `LM Arena Direct — Model: ${picked}` : "LM Arena Direct";
-  }
-
-  function formatOutput(platform, rewrittenPrompt, negatives){
-    const imgBlock = buildImageInstructions(platform);
+  // ===== Output formatting per platform =====
+  function formatByPlatform(platform, rewrittenText){
+    const wc = wordCount(rewrittenText);
 
     if(platform === "sora2"){
-      return ["SORA 2 (single prompt block)", imgBlock || null, rewrittenPrompt].filter(Boolean).join("\n\n");
+      // Sora likes one block; 120-word mode is handled elsewhere
+      return `SORA 2 (single prompt block)\n\n${rewrittenText}`;
     }
     if(platform === "capcut"){
-      const caption = $("overlay").value.trim() || "AI PHOTO PROMO";
-      const onScreen = $("overlay").value.trim() || "AI Photo Promo Generator";
+      const overlay = ($("overlay").value || "").trim() || "Pocket Cinema";
       return [
         "CAPCUT (paste-ready blocks)",
-        `Caption:\n${caption}`,
-        `On-screen text:\n${onScreen}`,
-        imgBlock || null,
-        `Scene prompt:\n${rewrittenPrompt}`,
-        "Hashtags (optional):\n#PocketCinema #AIPrompts #Cinematic #CreatorTools"
-      ].filter(Boolean).join("\n\n");
+        `Caption:\n${overlay}`,
+        `Scene prompt:\n${rewrittenText}`,
+        "Hashtags (optional):\n#PocketCinema #PCNH #AIPrompts #CreatorTools"
+      ].join("\n\n");
     }
     if(platform === "lmarena"){
-      return [lmArenaHeader(), imgBlock || null, rewrittenPrompt, `Negative prompt: ${negatives}`].filter(Boolean).join("\n\n");
+      return `LM ARENA\n\n${rewrittenText}`;
     }
     if(platform === "gemini"){
-      return ["GEMINI (nano-banana)", imgBlock || null, `Prompt:\n${rewrittenPrompt}`, `Constraints:\n- ${negatives.replace("Avoid: ","")}`]
-        .filter(Boolean).join("\n\n");
+      return `GEMINI (nano-banana)\n\n${rewrittenText}`;
     }
     if(platform === "meta"){
-      return ["META AI", imgBlock || null, rewrittenPrompt, negatives].filter(Boolean).join("\n\n");
+      return `META AI\n\n${rewrittenText}`;
     }
     if(platform === "grok"){
-      return ["GROK", imgBlock || null, `Prompt:\n${rewrittenPrompt}`, negatives].filter(Boolean).join("\n\n");
+      return `GROK\n\n${rewrittenText}`;
     }
-    return ["CHATGPT", imgBlock || null, rewrittenPrompt, `Negative prompt: ${negatives}`].filter(Boolean).join("\n\n");
+    return `CHATGPT\n\n${rewrittenText}`;
   }
 
   function enforce120(text){
-    const wc = wordCount(text);
-    if(wc <= 120) return text;
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    if(words.length <= 120) return text;
 
-    // Hard fallback: compress to a single prompt line + short image role hint
-    let imgMini = "";
-    if(imagePack.length){
-      imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
+    // Keep header lines if present, then trim the rest
+    const lines = text.split("\n");
+    const head = [];
+    const body = [];
+    for(const ln of lines){
+      if(ln.toUpperCase().includes("SORA 2")) head.push(ln);
+      else body.push(ln);
     }
-    const raw = ($("rawPrompt").value || "").trim();
-    const fallback = raw ? raw : "Create a high-quality, realistic promotional image with clean composition and natural details.";
-    return [imgMini, fallback].filter(Boolean).join("\n").trim();
+    const joined = body.join(" ").replace(/\s+/g," ").trim();
+    const trimmed = joined.split(" ").slice(0, 120).join(" ");
+    return (head.length ? head.join("\n") + "\n\n" : "") + trimmed;
   }
 
   function render(text){
@@ -937,91 +1094,49 @@
     $("status").innerHTML = status;
   }
 
-  async function buildRewrittenPrompt(){
-    const platform = $("platform").value;
-    const strict120 = $("strict120").checked;
+  async function buildRewritten(){
+    const fields = gatherFields();
+    const rewriteMode = $("rewriteMode").value;
 
-    const goal = selectValue("goalSelect","goalCustom");
-    const vibe = selectValue("vibeSelect","vibeCustom");
-    const lighting = selectValue("lightingSelect","lightingCustom");
-    const lens = selectValue("lensSelect","lensCustom");
-    const ar = selectValue("arSelect","arCustom");
-    const quality = selectValue("qualitySelect","qualityCustom");
-    const overlay = ($("overlay").value || "").trim();
-    const detailsHelper = ($("details").value || "").trim();
-    const subjectHelper = ($("subject").value || "").trim();
-    const settingHelper = ($("setting").value || "").trim();
-
-    const raw = ($("rawPrompt").value || "").trim();
-
-    const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
-
-    // If rewrite off, still build a “clean” prompt using fields + raw notes
-    const mode = $("rewriteMode").value;
-
-    const opts = { strict120, goal, vibe, lighting, lens, ar, quality, overlay, detailsHelper, subjectHelper, settingHelper, platform };
-
-    if(mode === "gemini"){
-      const rewritten = await rewriteGemini(raw, opts);
-      return { rewritten, negatives };
+    // If user left everything empty, gently guide
+    const hasAny = Object.values(fields).some(v => (typeof v === "string" ? v.trim() : v));
+    if(!hasAny){
+      return localRewrite(currentMode, { ...fields, plain: "Start with a clear one-sentence intent." });
     }
 
-    if(mode === "local"){
-      // local rewrite returns an instruction-like rewritten prompt; we want final prompt text
-      // so we “compress” into a single clean prompt line
-      const staged = rewriteLocal(raw, opts);
-      // turn staging into a readable prompt
-      const cleaned = staged
-        .replace(/^Rewrite \+ enhance this into a production-ready image prompt:\s*/i, "")
-        .replace(/\n+/g, " ")
-        .replace(/\s{2,}/g, " ")
-        .trim();
-      return { rewritten: cleaned, negatives };
+    if(rewriteMode === "gemini"){
+      return await geminiRewrite(currentMode, fields);
     }
-
-    // Off: combine raw + selected fields without heavy rewriting
-    const parts = [];
-    if(raw) parts.push(raw);
-    if(goal) parts.push(`Goal: ${goal}.`);
-    if(subjectHelper) parts.push(`Subject: ${subjectHelper}.`);
-    if(settingHelper) parts.push(`Setting: ${settingHelper}.`);
-    if(vibe) parts.push(`Style: ${vibe}.`);
-    if(lighting) parts.push(`Lighting: ${lighting}.`);
-    if(lens) parts.push(`Camera: ${lens}.`);
-    if(quality) parts.push(`Quality: ${quality}.`);
-    if(ar) parts.push(`Aspect ratio: ${ar}.`);
-    if(detailsHelper) parts.push(`Must include: ${detailsHelper}.`);
-    if(overlay) parts.push(`Text overlay: ${overlay}.`);
-
-    return { rewritten: parts.join(" ").replace(/\s{2,}/g," ").trim(), negatives };
+    return localRewrite(currentMode, fields);
   }
 
-  // ===== Actions =====
   async function doGenerate(){
-    $("status").innerHTML = `<span class="warn">Working…</span>`;
-    const platform = $("platform").value;
-    const strict120 = $("strict120").checked;
+    if(!validateRequired()) return;
 
+    $("status").innerHTML = `Working…`;
     try{
-      const { rewritten, negatives } = await buildRewrittenPrompt();
-      let out = formatOutput(platform, rewritten, negatives);
-      if(strict120) out = enforce120(out);
-      render(out);
-    }catch(err){
-      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(err.message || String(err))}`;
+      const rewritten = await buildRewritten();
+      const formatted = formatByPlatform($("platform").value, rewritten);
+      const finalText = $("strict120").checked ? enforce120(formatted) : formatted;
+      render(finalText);
+      $("status").innerHTML = `<span class="ok">✓</span> Generated.`;
+    }catch(e){
+      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(e.message || String(e))}`;
     }
   }
 
   async function doShorten(){
-    $("status").innerHTML = `<span class="warn">Working…</span>`;
-    const platform = $("platform").value;
+    if(!validateRequired()) return;
+
+    $("status").innerHTML = `Working…`;
     try{
-      const { rewritten, negatives } = await buildRewrittenPrompt();
-      const out = enforce120(formatOutput(platform, rewritten, negatives));
-      render(out);
-      $("status").innerHTML += ` — <span class="ok">shortened</span>`;
-    }catch(err){
-      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(err.message || String(err))}`;
+      const rewritten = await buildRewritten();
+      const formatted = formatByPlatform($("platform").value, rewritten);
+      const finalText = enforce120(formatted);
+      render(finalText);
+      $("status").innerHTML = `<span class="ok">✓</span> Shortened to ≤120 words.`;
+    }catch(e){
+      $("status").innerHTML = `<span class="bad">Error:</span> ${escapeHtml(e.message || String(e))}`;
     }
   }
 
@@ -1031,27 +1146,23 @@
       await navigator.clipboard.writeText(text);
       $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
     }catch(e){
-      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.`;
+      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold output to copy manually.`;
     }
   }
 
   function doClear(){
+    // reset basics
     $("platform").value = "gemini";
     $("rewriteMode").value = "local";
-    $("rawPrompt").value = "";
+    $("geminiKey").value = "";
+    syncRewriteUI();
 
-    $("goalSelect").value = "Promo / Poster";
-    $("goalCustom").value = "";
-    $("goalCustom").classList.add("hidden");
-
+    $("plainStarter").value = "";
+    $("rawNotes").value = "";
     $("subject").value = "";
     $("setting").value = "";
-    $("onlyFilled").checked = false;
-    $("hideOptional").checked = true;
-    $("hideOptionalChip").classList.add("hidden");
-    $("strict120").checked = false;
-    $("verbose").checked = true;
 
+    // creative controls
     $("vibeSelect").value = ""; $("vibeCustom").value = ""; $("vibeCustom").classList.add("hidden");
     $("lightingSelect").value = ""; $("lightingCustom").value = ""; $("lightingCustom").classList.add("hidden");
     $("lensSelect").value = ""; $("lensCustom").value = ""; $("lensCustom").classList.add("hidden");
@@ -1061,39 +1172,39 @@
     $("overlay").value = "";
     $("details").value = "";
 
-    $("lmaMode").value = "battle";
-    $("lmaModelMode").value = "none";
-    $("lmaModelPick").value = "";
-    $("lmaManual").value = "";
-    syncLmArenaUI();
+    // album
+    $("albumArtist").value = "";
+    $("albumTitle").value = "";
 
-    setOptionalVisible(true);
-    syncOptionalVisibilityRules();
+    // framing
+    $("framingMode").value = "same";
 
+    // toggles
+    $("strict120").checked = false;
+    $("verbose").checked = true;
+
+    // images
     $("imgFiles").value = "";
     imagePack = [];
     renderImagePack();
 
-    $("output").textContent = "Fill the inputs and tap “Generate”.";
+    // output
+    $("output").textContent = "Pick a tab, fill what you can, then tap “Generate”.";
     $("status").textContent = "";
 
-    syncRewriteUI();
+    // mode re-sync
+    syncModeUI();
   }
 
-  // ===== Button wiring =====
-  $("gen").addEventListener("click", () => openPasswordModal(() => { doGenerate(); }));
-  $("shorten").addEventListener("click", () => openPasswordModal(() => { doShorten(); }));
+  // Buttons
+  $("gen").addEventListener("click", () => openPasswordModal(doGenerate));
+  $("shorten").addEventListener("click", () => openPasswordModal(doShorten));
+  $("copy").addEventListener("click", () => { doCopy(); });     // no password
+  $("clear").addEventListener("click", () => { doClear(); });   // no password
 
-  $("copy").addEventListener("click", () => { doCopy(); });
-  $("clear").addEventListener("click", () => { doClear(); });
-
-  // ===== Init =====
-  syncLmArenaUI();
-  syncOptionalVisibilityRules();
-  syncRewriteUI();
-
-  // Keep optional section visible by default
-  setOptionalVisible(true);
+  // Initial
+  syncModeUI();
+  setGuide(currentMode);
 </script>
 </body>
 </html>
