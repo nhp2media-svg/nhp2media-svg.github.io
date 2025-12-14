@@ -312,13 +312,17 @@
           Optional fields can be <strong>None</strong>, a preset, or <strong>Custom…</strong>.
         </div>
 
+        <!-- GOAL UPDATED: None / Preset / Custom -->
         <label>Goal</label>
-        <select id="goalPreset">
+        <select id="goalSelect">
           <option value="Promo / Poster" selected>Promo / Poster</option>
+          <option value="">None (omit)</option>
           <option value="Product / E-commerce">Product / E-commerce</option>
           <option value="YouTube Thumbnail">YouTube Thumbnail</option>
           <option value="Editorial / Paparazzi">Editorial / Paparazzi</option>
+          <option value="__custom__">Custom…</option>
         </select>
+        <input id="goalCustom" class="hidden" placeholder="Type your goal…" />
 
         <div class="row">
           <div>
@@ -478,7 +482,7 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
-  // ===== Password Gate (PROMPTS EVERY TIME) =====
+  // ===== Password Gate (only for Generate + Shorten) =====
   const ACCESS_PASSWORD = "PROMPT";
   let pendingAction = null;
 
@@ -512,13 +516,11 @@
   $("pwCancel").addEventListener("click", closePasswordModal);
   $("pwClose").addEventListener("click", closePasswordModal);
 
-  // Enter key submits in modal
   $("pwInput").addEventListener("keydown", (e) => {
     if(e.key === "Enter") submitPassword();
     if(e.key === "Escape") closePasswordModal();
   });
 
-  // Clicking backdrop closes
   $("pwBackdrop").addEventListener("click", (e) => {
     if(e.target === $("pwBackdrop")) closePasswordModal();
   });
@@ -589,7 +591,6 @@
       custom.classList.toggle("hidden", !isCustom);
 
       if(isCustom){
-        // show optional section if hidden and user is using hide mode
         if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
           setOptionalVisible(true);
           $("hideOptional").checked = false;
@@ -602,6 +603,8 @@
     sync();
   }
 
+  // bind Goal + others
+  bindCustomSelect("goalSelect","goalCustom");
   bindCustomSelect("vibeSelect","vibeCustom");
   bindCustomSelect("lightingSelect","lightingCustom");
   bindCustomSelect("lensSelect","lensCustom");
@@ -735,7 +738,7 @@
     const verbose = $("verbose").checked;
     const strict120 = $("strict120").checked;
 
-    const goal = ($("goalPreset").value || "").trim();
+    const goal = selectValue("goalSelect","goalCustom");
 
     const vibe = selectValue("vibeSelect","vibeCustom");
     const lighting = selectValue("lightingSelect","lightingCustom");
@@ -764,7 +767,6 @@
       lines.push(`${label}: ${value}.`);
     }
 
-    // Optional fields naturally omit when None is selected (empty string)
     maybe("Style", vibe);
     maybe("Lighting", lighting);
     if(lens){
@@ -791,12 +793,10 @@
     return { platform, verbose, strict120, lines, oneLine, negatives, overlay };
   }
 
-  // HIDE MODEL LINE when "None" is selected:
   function lmArenaHeader(){
     const mode = $("lmaMode").value;
     if(mode === "battle") return "LM ARENA (Battle / unknown model)";
 
-    // Direct
     const modelMode = $("lmaModelMode").value;
     if(modelMode === "none") return "LM Arena Direct";
 
@@ -805,7 +805,6 @@
       return manual ? `LM Arena Direct — Model: ${manual}` : "LM Arena Direct";
     }
 
-    // preset
     const picked = ($("lmaModelPick").value || "").trim();
     return picked ? `LM Arena Direct — Model: ${picked}` : "LM Arena Direct";
   }
@@ -853,8 +852,7 @@
     if(imagePack.length){
       imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
     }
-    const compact = `${imgMini}\n${d.oneLine}`.trim();
-    return compact;
+    return `${imgMini}\n${d.oneLine}`.trim();
   }
 
   function render(text){
@@ -867,7 +865,6 @@
     $("status").innerHTML = status;
   }
 
-  // ===== Action functions (wrapped by password modal) =====
   function doGenerate(){
     const d = baseData();
     let out = formatOutput(d);
@@ -894,7 +891,11 @@
 
   function doClear(){
     $("platform").value = "gemini";
-    $("goalPreset").value = "Promo / Poster";
+
+    $("goalSelect").value = "Promo / Poster";
+    $("goalCustom").value = "";
+    $("goalCustom").classList.add("hidden");
+
     $("subject").value = "";
     $("setting").value = "";
     $("onlyFilled").checked = false;
@@ -903,7 +904,6 @@
     $("strict120").checked = false;
     $("verbose").checked = true;
 
-    // Optional field dropdowns reset to None
     $("vibeSelect").value = ""; $("vibeCustom").value = ""; $("vibeCustom").classList.add("hidden");
     $("lightingSelect").value = ""; $("lightingCustom").value = ""; $("lightingCustom").classList.add("hidden");
     $("lensSelect").value = ""; $("lensCustom").value = ""; $("lensCustom").classList.add("hidden");
@@ -913,18 +913,15 @@
     $("overlay").value = "";
     $("details").value = "";
 
-    // LM Arena reset
     $("lmaMode").value = "battle";
     $("lmaModelMode").value = "none";
     $("lmaModelPick").value = "";
     $("lmaManual").value = "";
     syncLmArenaUI();
 
-    // optional visibility reset
     setOptionalVisible(true);
     syncOptionalVisibilityRules();
 
-    // images reset
     $("imgFiles").value = "";
     imagePack = [];
     renderImagePack();
@@ -933,11 +930,14 @@
     $("status").textContent = "";
   }
 
-  // ===== Buttons: ALWAYS PROMPT FOR PASSWORD =====
+  // ===== Buttons =====
+  // Password ONLY for Generate + Shorten
   $("gen").addEventListener("click", () => openPasswordModal(doGenerate));
   $("shorten").addEventListener("click", () => openPasswordModal(doShorten));
-  $("copy").addEventListener("click", () => openPasswordModal(() => { doCopy(); }));
-  $("clear").addEventListener("click", () => openPasswordModal(doClear));
+
+  // No password for Copy + Clear
+  $("copy").addEventListener("click", () => { doCopy(); });
+  $("clear").addEventListener("click", () => { doClear(); });
 </script>
 </body>
 </html>
