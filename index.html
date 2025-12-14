@@ -100,16 +100,17 @@
       padding:10px;
       background:rgba(0,0,0,.20);
     }
-    .imgTop{
-      display:flex; gap:10px; align-items:flex-start;
-    }
+    .imgTop{display:flex; gap:10px; align-items:flex-start;}
     .thumb{
       width:72px; height:72px; object-fit:cover;
       border-radius:10px;
       border:1px solid rgba(255,255,255,.12);
     }
     .imgMeta{flex:1; min-width:0;}
-    .imgName{font-size:.80rem; color:var(--muted); margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .imgName{
+      font-size:.80rem; color:var(--muted);
+      margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
     .miniLabel{margin:0 0 6px; font-size:.78rem; color:var(--muted);}
     .miniInput{
       width:100%;
@@ -120,6 +121,8 @@
       color:#fff;
       margin-bottom:8px;
     }
+    a.smallLink{color:var(--accent2); text-decoration:none;}
+    a.smallLink:hover{text-decoration:underline;}
   </style>
 </head>
 
@@ -160,18 +163,29 @@
             <label>Curated image models (optional)</label>
             <select id="lmaModelPick">
               <option value="">(optional) Choose…</option>
+
               <optgroup label="Google / Gemini / Imagen">
                 <option>gemini-2.5-flash-image-preview (nano-banana)</option>
                 <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
                 <option>imagen-4.0-generate-preview-06-06</option>
                 <option>imagen-4.0-ultra-generate-preview-06-06</option>
               </optgroup>
+
               <optgroup label="OpenAI / Microsoft">
                 <option>gpt-image-1</option>
                 <option>gpt-image-1-mini</option>
                 <option>dall-e-3</option>
                 <option>mai-image-1</option>
               </optgroup>
+
+              <optgroup label="ByteDance / Seedream">
+                <option>seedream-4.5</option>
+                <option>seedream-4-2k</option>
+                <option>seedream-4-high-res-fal</option>
+                <option>seedream-4-fal</option>
+                <option>seededit-3.0</option>
+              </optgroup>
+
               <optgroup label="FLUX / Other">
                 <option>flux-2-pro</option>
                 <option>flux-2-dev</option>
@@ -183,10 +197,20 @@
 
             <label>Manual model override (optional)</label>
             <input id="lmaManual" placeholder="Type any model name exactly" />
+
+            <div class="tiny" style="margin-top:8px; line-height:1.4;">
+              Model availability changes on LM Arena.
+              <br />
+              <a class="smallLink" href="https://lmarena.ai/leaderboard/image" target="_blank">View current LM Arena Image Models (Text-to-Image)</a>
+              <br />
+              <a class="smallLink" href="https://lmarena.ai/leaderboard/image-edit" target="_blank">View LM Arena Image Edit Models</a>
+              <br />
+              If your model isn’t listed, paste it into <strong>Manual model override</strong>.
+            </div>
           </div>
 
           <div class="tiny">
-            Battle mode stays model-agnostic. Direct mode can add a small header showing the model you picked/typed.
+            Battle mode stays model-agnostic. Direct mode adds an auto header showing the model you chose/typed.
           </div>
         </div>
 
@@ -289,7 +313,9 @@
           <button class="secondary" id="clear">Clear</button>
         </div>
 
-        <div class="tiny">Tip: Use “a person” unless it’s you/your owned assets. Avoid naming real people you don’t have rights to.</div>
+        <div class="tiny">
+          Tip: Use “a person” unless it’s you/your owned assets. Avoid naming real people you don’t have rights to.
+        </div>
       </div>
 
       <div class="card">
@@ -297,7 +323,7 @@
         <div id="output" class="out">Fill the inputs and tap “Generate”.</div>
         <div id="status" class="hint"></div>
         <div class="hint">
-          <span class="ok">✓</span> Works fully client-side (free). Image uploads stay in your browser.
+          <span class="ok">✓</span> Client-side only. Images stay in your browser (no uploads to a server).
         </div>
       </div>
     </div>
@@ -354,6 +380,20 @@
     return Array.from(files || []).slice(0, 10);
   }
 
+  function roleOption(label, current){
+    const selected = (label === current) ? "selected" : "";
+    return `<option ${selected}>${label}</option>`;
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
   function renderImagePack(){
     const wrap = $("imgPreview");
     wrap.innerHTML = "";
@@ -396,20 +436,6 @@
     });
   }
 
-  function roleOption(label, current){
-    const selected = (label === current) ? "selected" : "";
-    return `<option ${selected}>${label}</option>`;
-  }
-
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
   $("imgFiles").addEventListener("change", async (e) => {
     const files = clampImages(e.target.files);
     imagePack = [];
@@ -447,7 +473,6 @@
         ...lines
       ].join("\n");
     }
-
     if(platform === "sora2"){
       return [
         "Reference Images (Sora 2):",
@@ -455,7 +480,6 @@
         ...lines
       ].join("\n");
     }
-
     if(platform === "lmarena"){
       return [
         "Reference Images (LM Arena):",
@@ -463,7 +487,6 @@
         ...lines
       ].join("\n");
     }
-
     if(platform === "gemini"){
       return [
         "Reference Images (Gemini):",
@@ -471,7 +494,6 @@
         ...lines
       ].join("\n");
     }
-
     if(platform === "grok"){
       return [
         "Reference Images (Grok):",
@@ -479,7 +501,6 @@
         ...lines
       ].join("\n");
     }
-
     if(platform === "meta"){
       return [
         "Reference Images (Meta AI):",
@@ -549,8 +570,8 @@
     if(mode === "battle") return "LM ARENA (Battle / unknown model)";
     const picked = $("lmaModelPick").value.trim();
     const manual = $("lmaManual").value.trim();
-    const modelName = manual || picked || "(model not specified)";
-    return `LM ARENA (Direct) — Model: ${modelName}`;
+    const modelName = manual || picked || "(not specified)";
+    return `LM Arena Direct — Model: ${modelName}`;
   }
 
   function formatOutput(d){
