@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="Nathan Histed" />
+  <meta name="copyright" content="© 2025 Nathan Histed. All rights reserved." />
+  <title>About — Pocket Cinema (PCNH)</title>
+  <style>
+    :root{--bg:#0b0b0f;--text:#fff;--muted:#b5b5c0;--line:#26263a;--accent:#6d6dff;--accent2:#8a5cff;}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(109,109,255,.18), transparent 55%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(138,92,255,.14), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{max-width:920px;margin:0 auto;padding:26px 16px 60px;}
+    .card{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    }
+    h1{margin:0 0 8px;font-size:1.3rem;}
+    p{color:var(--muted);line-height:1.55;margin:10px 0;}
+    .tag{
+      display:inline-block;
+      margin:10px 0 0;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:.85rem;
+    }
+    a{color:var(--accent2);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+    .grid{display:grid;gap:12px;margin-top:12px;}
+    @media(min-width:760px){ .grid{grid-template-columns:1fr 1fr;} }
+    .box{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:14px;
+      background:rgba(0,0,0,.18);
+    }
+    .box h2{margin:0 0 6px;font-size:1rem;}
+    ul{margin:8px 0 0 18px;color:var(--muted);line-height:1.5;}
+    .footer{
+      margin-top:16px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:.85rem;
+      line-height:1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Pocket Cinema (PCNH)</h1>
+      <p>
+        Pocket Cinema is a learning-first creative tool built to help people use AI
+        with clarity, intent, and consistency — not guesswork.
+      </p>
+      <p class="tag">Created by <strong style="color:#fff;">Nathan Histed</strong> • © 2025 • All rights reserved</p>
+
+      <div class="grid">
+        <div class="box">
+          <h2>What it does</h2>
+          <ul>
+            <li>Turns simple ideas into strong, structured prompts</li>
+            <li>Uses task-based tabs (Logo, Enhance, Album, Mockup, etc.)</li>
+            <li>Teaches by guiding you: focus points, avoid list, and examples</li>
+            <li>Works across platforms (Gemini, LM Arena, Sora, CapCut, ChatGPT, etc.)</li>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h2>Why it exists</h2>
+          <ul>
+            <li>Most people only use a small fraction of what AI can do</li>
+            <li>Too many tools add options instead of understanding</li>
+            <li>Pocket Cinema focuses on constraints — because constraints create consistency</li>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h2>Privacy & safety</h2>
+          <ul>
+            <li>Client-side: your images stay in your browser</li>
+            <li>No accounts, no logins</li>
+            <li>If you choose AI rewrite, you bring your own API key</li>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h2>Back to the tool</h2>
+          <p><a href="./index.html">Open Pocket Cinema →</a></p>
+          <p class="footer">
+            Pocket Cinema’s UI patterns, prompt structures, and learning methodology are proprietary to Nathan Histed.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        Want to refer to it as <strong style="color:#fff;">PCNH</strong>? That’s the same project.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
