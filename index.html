@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Photo Promo Generator | Pocket Cinema</title>
+  <meta name="author" content="Nathan Histed" />
+  <meta name="copyright" content="© 2025 Nathan Histed. All rights reserved." />
+  <title>AI Photo Promo Generator | Pocket Cinema (© Nathan Histed)</title>
   <style>
     :root{
       --bg:#0b0b0f; --text:#fff; --muted:#b5b5c0; --line:#26263a;
@@ -74,6 +76,8 @@
     .ok{color:var(--ok)}
     .warn{color:var(--warn)}
     .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
+    a.smallLink{color:var(--accent2); text-decoration:none;}
+    a.smallLink:hover{text-decoration:underline;}
 
     .switchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;}
     .chip{
@@ -86,6 +90,28 @@
       display:flex; align-items:center; gap:8px;
     }
     .chip input{width:auto; padding:0; margin:0;}
+
+    .sectionHead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-top:12px;
+      padding-top:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .sectionHead h3{
+      margin:0;
+      font-size:.95rem;
+      color:#fff;
+      letter-spacing:.1px;
+    }
+
+    .optionalWrap{
+      margin-top:10px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      background:rgba(0,0,0,.18);
+    }
+    .hidden{display:none !important;}
 
     .imgGrid{
       display:grid;
@@ -121,8 +147,16 @@
       color:#fff;
       margin-bottom:8px;
     }
-    a.smallLink{color:var(--accent2); text-decoration:none;}
-    a.smallLink:hover{text-decoration:underline;}
+
+    .footer{
+      margin-top:18px;
+      padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:.82rem;
+      line-height:1.4;
+      text-align:center;
+    }
   </style>
 </head>
 
@@ -130,10 +164,10 @@
   <div class="wrap">
     <div class="top">
       <div class="brand">
-        <h1>AI Photo Promo Generator</h1>
-        <p>Pocket Cinema tool — multi-platform prompt blocks + reference image pack (1–10).</p>
+        <h1>Pocket Cinema — AI Photo Promo Generator</h1>
+        <p>Created by Nathan Histed. Multi-platform prompt blocks + reference image pack (1–10).</p>
       </div>
-      <div class="pill"><span>Live:</span><strong>nhp2media-svg.github.io</strong></div>
+      <div class="pill"><span>©</span><strong>Nathan Histed</strong></div>
     </div>
 
     <div class="grid">
@@ -152,14 +186,14 @@
         </select>
 
         <!-- LM Arena settings -->
-        <div id="lmaWrap" style="display:none; margin-top:10px;">
+        <div id="lmaWrap" class="hidden" style="margin-top:10px;">
           <label>LM Arena mode</label>
           <select id="lmaMode">
             <option value="battle">Battle (unknown model)</option>
             <option value="direct">Direct (choose model)</option>
           </select>
 
-          <div id="lmaDirectOnly" style="display:none;">
+          <div id="lmaDirectOnly" class="hidden">
             <label>Curated image models (optional)</label>
             <select id="lmaModelPick">
               <option value="">(optional) Choose…</option>
@@ -216,6 +250,14 @@
 
         <div class="switchRow">
           <label class="chip">
+            <input type="checkbox" id="onlyFilled" />
+            <span>Only include fields that are filled</span>
+          </label>
+          <label class="chip hidden" id="hideOptionalChip">
+            <input type="checkbox" id="hideOptional" checked />
+            <span>Hide optional fields until used</span>
+          </label>
+          <label class="chip">
             <input type="checkbox" id="strict120" />
             <span>Strict 120-word mode (Sora-friendly)</span>
           </label>
@@ -225,13 +267,19 @@
           </label>
         </div>
 
-        <label>Goal</label>
-        <select id="goal">
-          <option value="promo">Promo / Poster</option>
-          <option value="product">Product / E-commerce</option>
-          <option value="thumbnail">YouTube Thumbnail</option>
-          <option value="editorial">Editorial / Paparazzi</option>
-        </select>
+        <div class="tiny">
+          Goal → Quality are “choose or type.” If “Only include…” is ON, empty fields are skipped (and optional fields can be hidden).
+        </div>
+
+        <!-- Goal: datalist -->
+        <label>Goal (choose or type)</label>
+        <input id="goal" list="goalList" placeholder="Promo / Poster" value="Promo / Poster" />
+        <datalist id="goalList">
+          <option value="Promo / Poster"></option>
+          <option value="Product / E-commerce"></option>
+          <option value="YouTube Thumbnail"></option>
+          <option value="Editorial / Paparazzi"></option>
+        </datalist>
 
         <div class="row">
           <div>
@@ -239,67 +287,85 @@
             <input id="subject" placeholder="e.g., a creator holding a camera, a slime product, a musician" />
           </div>
           <div>
-            <label>Vibe</label>
-            <select id="vibe">
-              <option value="cinematic">Cinematic</option>
-              <option value="futuristic-minimal">Futuristic Minimal</option>
-              <option value="luxury">Luxury / High-end</option>
-              <option value="gritty">Gritty / Street</option>
-              <option value="dreamy">Dreamy / Soft</option>
-            </select>
+            <label>Setting / Background</label>
+            <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
           </div>
         </div>
 
-        <div class="row">
-          <div>
-            <label>Lighting</label>
-            <select id="lighting">
-              <option value="softbox">Softbox studio, clean highlights</option>
-              <option value="flash">Flash-lit paparazzi, crisp speculars</option>
-              <option value="golden">Golden hour, warm rim light</option>
-              <option value="neon">Neon accents, high contrast</option>
-              <option value="moody">Moody low-key, dramatic shadows</option>
-            </select>
-          </div>
-          <div>
-            <label>Camera / Lens</label>
-            <select id="lens">
-              <option value="35mm">35mm documentary</option>
-              <option value="50mm">50mm portrait</option>
-              <option value="85mm">85mm compression</option>
-              <option value="24mm">24mm wide hero shot</option>
-            </select>
-          </div>
+        <!-- OPTIONAL FIELDS SECTION -->
+        <div class="sectionHead">
+          <h3>Optional fields</h3>
+          <button class="secondary" id="toggleOptionalBtn" type="button">Hide</button>
         </div>
 
-        <label>Setting / Background</label>
-        <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
-
-        <label>Key details (must appear)</label>
-        <textarea id="details" placeholder="Logos, colors, clothing, props, composition, mood notes…"></textarea>
-
-        <div class="row">
-          <div>
-            <label>Aspect Ratio</label>
-            <select id="ar">
-              <option value="1:1">1:1 (Square)</option>
-              <option value="4:5">4:5 (IG Post)</option>
-              <option value="9:16">9:16 (Story/Reel)</option>
-              <option value="16:9">16:9 (YouTube)</option>
-            </select>
+        <div id="optionalWrap" class="optionalWrap">
+          <div class="row">
+            <div>
+              <label>Vibe (choose or type)</label>
+              <input id="vibe" list="vibeList" placeholder="Cinematic" value="Cinematic" />
+              <datalist id="vibeList">
+                <option value="Cinematic"></option>
+                <option value="Futuristic Minimal"></option>
+                <option value="Luxury / High-end"></option>
+                <option value="Gritty / Street"></option>
+                <option value="Dreamy / Soft"></option>
+              </datalist>
+            </div>
+            <div>
+              <label>Lighting (choose or type)</label>
+              <input id="lighting" list="lightingList" placeholder="Softbox studio, clean highlights" value="Softbox studio, clean highlights" />
+              <datalist id="lightingList">
+                <option value="Softbox studio, clean highlights"></option>
+                <option value="Flash-lit paparazzi, crisp speculars"></option>
+                <option value="Golden hour, warm rim light"></option>
+                <option value="Neon accents, high contrast"></option>
+                <option value="Moody low-key, dramatic shadows"></option>
+              </datalist>
+            </div>
           </div>
-          <div>
-            <label>Quality</label>
-            <select id="quality">
-              <option value="ultra">Ultra-detailed, realistic texture</option>
-              <option value="clean">Clean, polished, minimal grain</option>
-              <option value="film">Film grain, editorial realism</option>
-            </select>
+
+          <div class="row">
+            <div>
+              <label>Camera / Lens (choose or type)</label>
+              <input id="lens" list="lensList" placeholder="50mm portrait" value="50mm portrait" />
+              <datalist id="lensList">
+                <option value="35mm documentary"></option>
+                <option value="50mm portrait"></option>
+                <option value="85mm compression"></option>
+                <option value="24mm wide hero shot"></option>
+              </datalist>
+            </div>
+            <div>
+              <label>Aspect Ratio (choose or type)</label>
+              <input id="ar" list="arList" placeholder="9:16" value="9:16" />
+              <datalist id="arList">
+                <option value="1:1"></option>
+                <option value="4:5"></option>
+                <option value="9:16"></option>
+                <option value="16:9"></option>
+              </datalist>
+            </div>
           </div>
+
+          <div class="row">
+            <div>
+              <label>Quality (choose or type)</label>
+              <input id="quality" list="qualityList" placeholder="Ultra-detailed, realistic texture" value="Ultra-detailed, realistic texture" />
+              <datalist id="qualityList">
+                <option value="Ultra-detailed, realistic texture"></option>
+                <option value="Clean, polished, minimal grain"></option>
+                <option value="Film grain, editorial realism"></option>
+              </datalist>
+            </div>
+            <div>
+              <label>Text overlay (optional)</label>
+              <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
+            </div>
+          </div>
+
+          <label>Key details (optional)</label>
+          <textarea id="details" placeholder="Logos, colors, clothing, props, composition, mood notes…"></textarea>
         </div>
-
-        <label>Text overlay (optional)</label>
-        <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
 
         <label>Reference Images (1–10)</label>
         <input id="imgFiles" type="file" accept="image/*" multiple />
@@ -307,10 +373,10 @@
         <div id="imgPreview" class="imgGrid"></div>
 
         <div class="btns">
-          <button id="gen">Generate</button>
-          <button class="secondary" id="shorten">Shorten</button>
-          <button class="secondary" id="copy">Copy</button>
-          <button class="secondary" id="clear">Clear</button>
+          <button id="gen" type="button">Generate</button>
+          <button class="secondary" id="shorten" type="button">Shorten</button>
+          <button class="secondary" id="copy" type="button">Copy</button>
+          <button class="secondary" id="clear" type="button">Clear</button>
         </div>
 
         <div class="tiny">
@@ -323,7 +389,13 @@
         <div id="output" class="out">Fill the inputs and tap “Generate”.</div>
         <div id="status" class="hint"></div>
         <div class="hint">
-          <span class="ok">✓</span> Client-side only. Images stay in your browser (no uploads to a server).
+          <span class="ok">✓</span> Client-side only. Images stay in your browser (no server uploads).
+        </div>
+
+        <div class="footer">
+          © 2025 Nathan Histed — Pocket Cinema. All rights reserved.
+          <br/>
+          This tool and its UI/prompt formats are proprietary to Nathan Histed.
         </div>
       </div>
     </div>
@@ -331,33 +403,15 @@
 
 <script>
   const $ = (id) => document.getElementById(id);
+  const DEFAULTS = {
+    goal: "Promo / Poster",
+    vibe: "Cinematic",
+    lighting: "Softbox studio, clean highlights",
+    lens: "50mm portrait",
+    ar: "9:16",
+    quality: "Ultra-detailed, realistic texture"
+  };
 
-  // ===== Helpers =====
-  function humanizeLighting(v){
-    return ({
-      softbox: "studio softbox lighting with clean highlights, smooth falloff",
-      flash: "flash-lit paparazzi lighting, crisp specular highlights, candid realism",
-      golden: "golden hour lighting, warm rim light, soft sun flare",
-      neon: "neon accent lighting, high contrast, glossy reflections",
-      moody: "moody low-key lighting, dramatic shadows, cinematic contrast"
-    })[v] || v;
-  }
-  function humanizeVibe(v){
-    return ({
-      cinematic: "cinematic, high-end, dramatic composition",
-      "futuristic-minimal": "futuristic minimalist aesthetic, clean geometry, sleek styling",
-      luxury: "luxury editorial look, premium materials, upscale mood",
-      gritty: "gritty documentary realism, street texture, raw energy",
-      dreamy: "dreamy soft aesthetic, gentle highlights, airy atmosphere"
-    })[v] || v;
-  }
-  function humanizeQuality(v){
-    return ({
-      ultra: "ultra-detailed realism, lifelike textures, high clarity",
-      clean: "clean polished look, crisp edges, minimal artifacts",
-      film: "editorial film realism, subtle grain, natural imperfections"
-    })[v] || v;
-  }
   function wordCount(text){
     return text.trim().split(/\s+/).filter(Boolean).length;
   }
@@ -365,13 +419,63 @@
   // ===== LM Arena UI =====
   function syncLmArenaUI(){
     const isLma = $("platform").value === "lmarena";
-    $("lmaWrap").style.display = isLma ? "block" : "none";
+    $("lmaWrap").classList.toggle("hidden", !isLma);
     const direct = $("lmaMode").value === "direct";
-    $("lmaDirectOnly").style.display = (isLma && direct) ? "block" : "none";
+    $("lmaDirectOnly").classList.toggle("hidden", !(isLma && direct));
   }
   $("platform").addEventListener("change", syncLmArenaUI);
   $("lmaMode").addEventListener("change", syncLmArenaUI);
   syncLmArenaUI();
+
+  // ===== Optional fields UI =====
+  let optionalVisible = true;
+
+  function setOptionalVisible(isVisible){
+    optionalVisible = isVisible;
+    $("optionalWrap").classList.toggle("hidden", !isVisible);
+    $("toggleOptionalBtn").textContent = isVisible ? "Hide" : "Show";
+  }
+
+  $("toggleOptionalBtn").addEventListener("click", () => {
+    setOptionalVisible(!optionalVisible);
+  });
+
+  function syncOptionalVisibilityRules(){
+    const onlyFilled = $("onlyFilled").checked;
+
+    // show/hide the "Hide optional fields until used" chip
+    $("hideOptionalChip").classList.toggle("hidden", !onlyFilled);
+
+    if(!onlyFilled){
+      // When onlyFilled is OFF, show optional section by default (user can still hide manually)
+      return;
+    }
+
+    // When onlyFilled is ON, default to hiding optional section if hideOptional is ON
+    const hideOpt = $("hideOptional").checked;
+    if(hideOpt){
+      setOptionalVisible(false);
+    }else{
+      setOptionalVisible(true);
+    }
+  }
+
+  $("onlyFilled").addEventListener("change", syncOptionalVisibilityRules);
+  $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
+  syncOptionalVisibilityRules();
+
+  // If user starts typing in optional fields while hidden, auto-show the optional section
+  const optionalFieldIds = ["vibe","lighting","lens","ar","quality","overlay","details"];
+  optionalFieldIds.forEach(id => {
+    $(id).addEventListener("input", () => {
+      if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
+        // Show section the moment they interact (nice UX)
+        setOptionalVisible(true);
+        $("hideOptional").checked = false;
+        syncOptionalVisibilityRules();
+      }
+    });
+  });
 
   // ===== Image pack =====
   let imagePack = []; // {name, dataUrl, role, keep, change}
@@ -467,109 +571,100 @@
     });
 
     if(platform === "capcut"){
-      return [
-        "Reference Images (CapCut workflow):",
-        "Use Image 1 as the cover/frame reference if applicable.",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (CapCut workflow):","Use Image 1 as the cover/frame reference if applicable.", ...lines].join("\n");
     }
     if(platform === "sora2"){
-      return [
-        "Reference Images (Sora 2):",
-        "Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (Sora 2):","Use Image 1 as the primary subject reference; use others as wardrobe/background/style refs.", ...lines].join("\n");
     }
     if(platform === "lmarena"){
-      return [
-        "Reference Images (LM Arena):",
-        "If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (LM Arena):","If the model supports image conditioning, follow these roles. If not, treat them as descriptive guidance.", ...lines].join("\n");
     }
     if(platform === "gemini"){
-      return [
-        "Reference Images (Gemini):",
-        "Attach images in order. Use Image 1 as primary subject reference; follow roles below.",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (Gemini):","Attach images in order. Use Image 1 as primary subject reference; follow roles below.", ...lines].join("\n");
     }
     if(platform === "grok"){
-      return [
-        "Reference Images (Grok):",
-        "Attach images in order. Follow these roles/constraints:",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (Grok):","Attach images in order. Follow these roles/constraints:", ...lines].join("\n");
     }
     if(platform === "meta"){
-      return [
-        "Reference Images (Meta AI):",
-        "Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.",
-        ...lines
-      ].join("\n");
+      return ["Reference Images (Meta AI):","Use images as references. Keep identity consistent based on Image 1 unless instructed otherwise.", ...lines].join("\n");
     }
-
-    // chatgpt default
-    return [
-      "Reference Images:",
-      "Attach images in order. Follow these roles and constraints:",
-      ...lines
-    ].join("\n");
+    return ["Reference Images:","Attach images in order. Follow these roles and constraints:", ...lines].join("\n");
   }
 
   // ===== Prompt building =====
   function baseData(){
     const platform = $("platform").value;
-    const goal = $("goal").value;
-    const subject = $("subject").value.trim() || "a subject";
-    const vibe = humanizeVibe($("vibe").value);
-    const lighting = humanizeLighting($("lighting").value);
-    const lens = $("lens").value;
-    const setting = $("setting").value.trim() || "a fitting environment";
-    const details = $("details").value.trim();
-    const ar = $("ar").value;
-    const quality = humanizeQuality($("quality").value);
-    const overlay = $("overlay").value.trim();
-    const strict120 = $("strict120").checked;
+    const onlyFilled = $("onlyFilled").checked;
     const verbose = $("verbose").checked;
+    const strict120 = $("strict120").checked;
 
-    const goalLine = ({
-      promo: "Create a promotional hero image / poster key art.",
-      product: "Create a product-focused hero image for e-commerce.",
-      thumbnail: "Create a bold YouTube thumbnail-style hero image.",
-      editorial: "Create an editorial candid paparazzi-style image."
-    })[goal] || "Create a hero image.";
+    const raw = {
+      goal: ($("goal").value || "").trim(),
+      vibe: ($("vibe").value || "").trim(),
+      lighting: ($("lighting").value || "").trim(),
+      lens: ($("lens").value || "").trim(),
+      ar: ($("ar").value || "").trim(),
+      quality: ($("quality").value || "").trim(),
+      subject: ($("subject").value || "").trim(),
+      setting: ($("setting").value || "").trim(),
+      details: ($("details").value || "").trim(),
+      overlay: ($("overlay").value || "").trim()
+    };
+
+    // Defaults only when onlyFilled is OFF
+    const goal = onlyFilled ? raw.goal : (raw.goal || DEFAULTS.goal);
+    const vibe = onlyFilled ? raw.vibe : (raw.vibe || DEFAULTS.vibe);
+    const lighting = onlyFilled ? raw.lighting : (raw.lighting || DEFAULTS.lighting);
+    const lens = onlyFilled ? raw.lens : (raw.lens || DEFAULTS.lens);
+    const ar = onlyFilled ? raw.ar : (raw.ar || DEFAULTS.ar);
+    const quality = onlyFilled ? raw.quality : (raw.quality || DEFAULTS.quality);
+
+    // Subject + setting always have a fallback so prompts are usable
+    const subject = raw.subject || "a subject";
+    const setting = raw.setting || "a fitting environment";
 
     const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
 
-    const lines = [
-      goalLine,
-      `Subject: ${subject}.`,
-      `Style: ${vibe}.`,
-      `Setting: ${setting}.`,
-      `Lighting: ${lighting}.`,
-      verbose ? `Camera: ${lens} lens, sharp focus, strong depth, clean composition.` : `Camera: ${lens} lens.`,
-      `Quality: ${quality}.`,
-      `Aspect ratio: ${ar}.`,
-      details ? `Must include: ${details}.` : null,
-      overlay ? `Text overlay: ${overlay}.` : null
-    ].filter(Boolean);
+    const lines = [];
+    // branding line always
+    lines.push("Pocket Cinema — Prompt Generator (© Nathan Histed).");
 
-    const oneLine = (() => {
-      const must = details ? ` Must include: ${details}.` : "";
-      const text = overlay ? ` Text overlay: ${overlay}.` : "";
-      const cam = verbose ? `${lens} lens, sharp focus, strong depth` : `${lens} lens`;
-      return `${goalLine} ${subject}; ${vibe}; ${setting}; ${lighting}; ${cam}; ${quality}; AR ${ar}.${must}${text} ${negatives}`;
-    })();
+    if(goal) lines.push(`Goal: ${goal}.`);
+    lines.push(`Subject: ${subject}.`);
+    lines.push(`Setting: ${setting}.`);
 
-    return { platform, goalLine, subject, vibe, lighting, lens, setting, details, ar, quality, overlay, strict120, verbose, lines, oneLine, negatives };
+    if(vibe) lines.push(`Style: ${vibe}.`);
+    if(lighting) lines.push(`Lighting: ${lighting}.`);
+
+    if(lens){
+      lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
+    }
+    if(quality) lines.push(`Quality: ${quality}.`);
+    if(ar) lines.push(`Aspect ratio: ${ar}.`);
+
+    if(raw.details) lines.push(`Must include: ${raw.details}.`);
+    if(raw.overlay) lines.push(`Text overlay: ${raw.overlay}.`);
+
+    const oneParts = [];
+    if(goal) oneParts.push(`Goal: ${goal}`);
+    oneParts.push(subject);
+    oneParts.push(setting);
+    if(vibe) oneParts.push(vibe);
+    if(lighting) oneParts.push(lighting);
+    if(lens) oneParts.push(lens);
+    if(quality) oneParts.push(quality);
+    if(ar) oneParts.push(`AR ${ar}`);
+
+    const oneLine = `${oneParts.join("; ")}. ${raw.details ? `Must include: ${raw.details}. ` : ""}${raw.overlay ? `Text overlay: ${raw.overlay}. ` : ""}${negatives}`.trim();
+
+    return { platform, onlyFilled, verbose, strict120, lines, oneLine, negatives, overlay: raw.overlay, details: raw.details };
   }
 
   function lmArenaHeader(){
     const mode = $("lmaMode").value;
     if(mode === "battle") return "LM ARENA (Battle / unknown model)";
-    const picked = $("lmaModelPick").value.trim();
-    const manual = $("lmaManual").value.trim();
+    const picked = ($("lmaModelPick").value || "").trim();
+    const manual = ($("lmaManual").value || "").trim();
     const modelName = manual || picked || "(not specified)";
     return `LM Arena Direct — Model: ${modelName}`;
   }
@@ -578,94 +673,47 @@
     const imgBlock = buildImageInstructions(d.platform);
 
     if(d.platform === "sora2"){
-      const parts = [
-        "SORA 2 (single prompt block)",
-        imgBlock ? imgBlock : null,
-        d.oneLine
-      ].filter(Boolean);
-      return parts.join("\n\n");
+      return ["SORA 2 (single prompt block)", imgBlock || null, d.oneLine].filter(Boolean).join("\n\n");
     }
-
     if(d.platform === "capcut"){
       const caption = d.overlay || "AI PHOTO PROMO";
       const onScreen = d.overlay || "AI Photo Promo Generator";
-      const parts = [
+      return [
         "CAPCUT (paste-ready blocks)",
         `Caption:\n${caption}`,
         `On-screen text:\n${onScreen}`,
-        imgBlock ? imgBlock : null,
+        imgBlock || null,
         `Scene prompt:\n${d.oneLine}`,
         "Hashtags (optional):\n#PocketCinema #AIPrompts #Cinematic #CreatorTools"
-      ].filter(Boolean);
-      return parts.join("\n\n");
+      ].filter(Boolean).join("\n\n");
     }
-
     if(d.platform === "lmarena"){
-      const parts = [
-        lmArenaHeader(),
-        imgBlock ? imgBlock : null,
-        d.lines.join("\n"),
-        `Negative prompt: ${d.negatives}`
-      ].filter(Boolean);
-      return parts.join("\n\n");
+      return [lmArenaHeader(), imgBlock || null, d.lines.join("\n"), `Negative prompt: ${d.negatives}`]
+        .filter(Boolean).join("\n\n");
     }
-
     if(d.platform === "gemini"){
-      const parts = [
-        "GEMINI (nano-banana)",
-        `Task:\n${d.goalLine}`,
-        imgBlock ? imgBlock : null,
-        `Prompt:\n${d.lines.slice(1).join(" ")}`,
-        `Constraints:\n- ${d.negatives.replace("Avoid: ","")}`
-      ].filter(Boolean);
-      return parts.join("\n\n");
+      return ["GEMINI (nano-banana)", imgBlock || null, `Prompt:\n${d.lines.join(" ")}`, `Constraints:\n- ${d.negatives.replace("Avoid: ","")}`]
+        .filter(Boolean).join("\n\n");
     }
-
     if(d.platform === "meta"){
-      const parts = [
-        "META AI",
-        imgBlock ? imgBlock : null,
-        d.lines.join(" "),
-        d.negatives
-      ].filter(Boolean);
-      return parts.join("\n\n");
+      return ["META AI", imgBlock || null, d.lines.join(" "), d.negatives].filter(Boolean).join("\n\n");
     }
-
     if(d.platform === "grok"){
-      const parts = [
-        "GROK",
-        `Generate: ${d.goalLine}`,
-        imgBlock ? imgBlock : null,
-        `Details: ${d.subject}; ${d.vibe}; ${d.setting}; ${d.lighting}; ${d.lens}; ${d.quality}; AR ${d.ar}.`,
-        d.details ? `Must include: ${d.details}.` : null,
-        d.overlay ? `Text overlay: ${d.overlay}.` : null,
-        d.negatives
-      ].filter(Boolean);
-      return parts.join("\n");
+      return ["GROK", imgBlock || null, `Prompt:\n${d.lines.join(" ")}`, d.negatives].filter(Boolean).join("\n\n");
     }
-
-    // ChatGPT default
-    const parts = [
-      "CHATGPT",
-      imgBlock ? imgBlock : null,
-      d.lines.join("\n"),
-      `Negative prompt: ${d.negatives}`
-    ].filter(Boolean);
-    return parts.join("\n\n");
+    return ["CHATGPT", imgBlock || null, d.lines.join("\n"), `Negative prompt: ${d.negatives}`].filter(Boolean).join("\n\n");
   }
 
   function enforce120(text, d){
     const wc = wordCount(text);
     if(wc <= 120) return { text, wc, ok:true };
 
-    // fallback: compact + image roles (kept short)
     let imgMini = "";
     if(imagePack.length){
       imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
     }
     const compact = `${imgMini}\n${d.oneLine}`.trim();
-    const wc2 = wordCount(compact);
-    return { text: compact, wc: wc2, ok: (wc2 <= 120) };
+    return { text: compact, wc: wordCount(compact), ok: (wordCount(compact) <= 120) };
   }
 
   function render(text){
@@ -706,11 +754,41 @@
   });
 
   $("clear").addEventListener("click", () => {
-    ["subject","setting","details","overlay","lmaManual"].forEach(id => { if($(id)) $(id).value = ""; });
-    if($("lmaModelPick")) $("lmaModelPick").value = "";
-    if($("imgFiles")) $("imgFiles").value = "";
+    // reset core
+    $("platform").value = "gemini";
+    $("goal").value = DEFAULTS.goal;
+    $("subject").value = "";
+    $("setting").value = "";
+    $("onlyFilled").checked = false;
+    $("hideOptional").checked = true;
+    $("hideOptionalChip").classList.add("hidden");
+    $("strict120").checked = false;
+    $("verbose").checked = true;
+
+    // reset optional fields
+    $("vibe").value = DEFAULTS.vibe;
+    $("lighting").value = DEFAULTS.lighting;
+    $("lens").value = DEFAULTS.lens;
+    $("ar").value = DEFAULTS.ar;
+    $("quality").value = DEFAULTS.quality;
+    $("overlay").value = "";
+    $("details").value = "";
+
+    // reset LM Arena
+    $("lmaMode").value = "battle";
+    $("lmaModelPick").value = "";
+    $("lmaManual").value = "";
+    syncLmArenaUI();
+
+    // reset optional visibility
+    setOptionalVisible(true);
+    syncOptionalVisibilityRules();
+
+    // reset images
+    $("imgFiles").value = "";
     imagePack = [];
     renderImagePack();
+
     $("output").textContent = "Fill the inputs and tap “Generate”.";
     $("status").textContent = "";
   });
