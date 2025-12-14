@@ -10,7 +10,7 @@
     :root{
       --bg:#0b0b0f; --text:#fff; --muted:#b5b5c0; --line:#26263a;
       --accent:#6d6dff; --accent2:#8a5cff;
-      --ok:#a6ffcf; --warn:#ffd38a;
+      --ok:#a6ffcf; --warn:#ffd38a; --bad:#ff7d7d;
     }
     *{box-sizing:border-box}
     body{
@@ -75,6 +75,7 @@
     .hint{color:var(--muted); font-size:.85rem; margin-top:8px; line-height:1.35;}
     .ok{color:var(--ok)}
     .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
     .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
     a.smallLink{color:var(--accent2); text-decoration:none;}
     a.smallLink:hover{text-decoration:underline;}
@@ -97,12 +98,7 @@
       padding-top:10px;
       border-top:1px solid rgba(255,255,255,.08);
     }
-    .sectionHead h3{
-      margin:0;
-      font-size:.95rem;
-      color:#fff;
-      letter-spacing:.1px;
-    }
+    .sectionHead h3{margin:0; font-size:.95rem; color:#fff; letter-spacing:.1px;}
 
     .optionalWrap{
       margin-top:10px;
@@ -157,6 +153,42 @@
       line-height:1.4;
       text-align:center;
     }
+
+    /* ===== Password Modal ===== */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.65);
+      display:flex; align-items:center; justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
+    .modal{
+      width:min(520px, 100%);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow:0 18px 60px rgba(0,0,0,.55);
+      padding:14px;
+      backdrop-filter: blur(8px);
+    }
+    .modalTop{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .modalTop h3{margin:0; font-size:1rem;}
+    .modalTop p{margin:.35rem 0 0; color:var(--muted); font-size:.88rem; line-height:1.35;}
+    .xBtn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      border-radius:10px;
+      padding:8px 10px;
+      cursor:pointer;
+    }
+    .modalActions{
+      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px;
+    }
+    .modalMsg{margin-top:8px; font-size:.85rem;}
   </style>
 </head>
 
@@ -194,43 +226,54 @@
           </select>
 
           <div id="lmaDirectOnly" class="hidden">
-            <label>Curated image models (optional)</label>
-            <select id="lmaModelPick">
-              <option value="">(optional) Choose…</option>
-
-              <optgroup label="Google / Gemini / Imagen">
-                <option>gemini-2.5-flash-image-preview (nano-banana)</option>
-                <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
-                <option>imagen-4.0-generate-preview-06-06</option>
-                <option>imagen-4.0-ultra-generate-preview-06-06</option>
-              </optgroup>
-
-              <optgroup label="OpenAI / Microsoft">
-                <option>gpt-image-1</option>
-                <option>gpt-image-1-mini</option>
-                <option>dall-e-3</option>
-                <option>mai-image-1</option>
-              </optgroup>
-
-              <optgroup label="ByteDance / Seedream">
-                <option>seedream-4.5</option>
-                <option>seedream-4-2k</option>
-                <option>seedream-4-high-res-fal</option>
-                <option>seedream-4-fal</option>
-                <option>seededit-3.0</option>
-              </optgroup>
-
-              <optgroup label="FLUX / Other">
-                <option>flux-2-pro</option>
-                <option>flux-2-dev</option>
-                <option>flux-2-flex</option>
-                <option>ideogram-v3-quality</option>
-                <option>stable-diffusion-v35-large</option>
-              </optgroup>
+            <label>LM Arena Model (Direct)</label>
+            <select id="lmaModelMode">
+              <option value="none" selected>None (don’t specify a model)</option>
+              <option value="preset">Choose from presets</option>
+              <option value="custom">Custom (type my own)</option>
             </select>
 
-            <label>Manual model override (optional)</label>
-            <input id="lmaManual" placeholder="Type any model name exactly" />
+            <div id="lmaPresetWrap" class="hidden">
+              <label>Preset models</label>
+              <select id="lmaModelPick">
+                <option value="">(optional) Choose…</option>
+
+                <optgroup label="Google / Gemini / Imagen">
+                  <option>gemini-2.5-flash-image-preview (nano-banana)</option>
+                  <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
+                  <option>imagen-4.0-generate-preview-06-06</option>
+                  <option>imagen-4.0-ultra-generate-preview-06-06</option>
+                </optgroup>
+
+                <optgroup label="OpenAI / Microsoft">
+                  <option>gpt-image-1</option>
+                  <option>gpt-image-1-mini</option>
+                  <option>dall-e-3</option>
+                  <option>mai-image-1</option>
+                </optgroup>
+
+                <optgroup label="ByteDance / Seedream">
+                  <option>seedream-4.5</option>
+                  <option>seedream-4-2k</option>
+                  <option>seedream-4-high-res-fal</option>
+                  <option>seedream-4-fal</option>
+                  <option>seededit-3.0</option>
+                </optgroup>
+
+                <optgroup label="FLUX / Other">
+                  <option>flux-2-pro</option>
+                  <option>flux-2-dev</option>
+                  <option>flux-2-flex</option>
+                  <option>ideogram-v3-quality</option>
+                  <option>stable-diffusion-v35-large</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div id="lmaCustomWrap" class="hidden">
+              <label>Custom model name</label>
+              <input id="lmaManual" placeholder="Type any model name exactly" />
+            </div>
 
             <div class="tiny" style="margin-top:8px; line-height:1.4;">
               Model availability changes on LM Arena.
@@ -238,13 +281,11 @@
               <a class="smallLink" href="https://lmarena.ai/leaderboard/image" target="_blank">View current LM Arena Image Models (Text-to-Image)</a>
               <br />
               <a class="smallLink" href="https://lmarena.ai/leaderboard/image-edit" target="_blank">View LM Arena Image Edit Models</a>
-              <br />
-              If your model isn’t listed, paste it into <strong>Manual model override</strong>.
             </div>
           </div>
 
           <div class="tiny">
-            Battle mode stays model-agnostic. Direct mode adds an auto header showing the model you chose/typed.
+            Battle mode stays model-agnostic. Direct mode optionally specifies a model.
           </div>
         </div>
 
@@ -268,10 +309,9 @@
         </div>
 
         <div class="tiny">
-          Dropdown presets are back + you can choose <strong>None</strong> or <strong>Custom</strong>. If “Only include…” is ON, empty/None fields are skipped.
+          Optional fields can be <strong>None</strong>, a preset, or <strong>Custom…</strong>.
         </div>
 
-        <!-- Goal (kept simple, always visible; user can type in details if they want) -->
         <label>Goal</label>
         <select id="goalPreset">
           <option value="Promo / Poster" selected>Promo / Poster</option>
@@ -291,7 +331,6 @@
           </div>
         </div>
 
-        <!-- OPTIONAL FIELDS SECTION -->
         <div class="sectionHead">
           <h3>Optional fields</h3>
           <button class="secondary" id="toggleOptionalBtn" type="button">Hide</button>
@@ -301,34 +340,28 @@
           <div class="row">
             <div>
               <label>Vibe</label>
-              <select id="vibeMode">
-                <option value="preset" selected>Use preset</option>
-                <option value="none">None (omit)</option>
-                <option value="custom">Custom (type my own)</option>
-              </select>
-              <select id="vibePreset">
-                <option value="Cinematic" selected>Cinematic</option>
+              <select id="vibeSelect">
+                <option value="" selected>None (omit)</option>
+                <option value="Cinematic">Cinematic</option>
                 <option value="Futuristic Minimal">Futuristic Minimal</option>
                 <option value="Luxury / High-end">Luxury / High-end</option>
                 <option value="Gritty / Street">Gritty / Street</option>
                 <option value="Dreamy / Soft">Dreamy / Soft</option>
+                <option value="__custom__">Custom…</option>
               </select>
               <input id="vibeCustom" class="hidden" placeholder="Type your vibe…" />
             </div>
 
             <div>
               <label>Lighting</label>
-              <select id="lightingMode">
-                <option value="preset" selected>Use preset</option>
-                <option value="none">None (omit)</option>
-                <option value="custom">Custom (type my own)</option>
-              </select>
-              <select id="lightingPreset">
-                <option value="Softbox studio, clean highlights" selected>Softbox studio, clean highlights</option>
+              <select id="lightingSelect">
+                <option value="" selected>None (omit)</option>
+                <option value="Softbox studio, clean highlights">Softbox studio, clean highlights</option>
                 <option value="Flash-lit paparazzi, crisp speculars">Flash-lit paparazzi, crisp speculars</option>
                 <option value="Golden hour, warm rim light">Golden hour, warm rim light</option>
                 <option value="Neon accents, high contrast">Neon accents, high contrast</option>
                 <option value="Moody low-key, dramatic shadows">Moody low-key, dramatic shadows</option>
+                <option value="__custom__">Custom…</option>
               </select>
               <input id="lightingCustom" class="hidden" placeholder="Type your lighting…" />
             </div>
@@ -337,32 +370,26 @@
           <div class="row">
             <div>
               <label>Camera / Lens</label>
-              <select id="lensMode">
-                <option value="preset" selected>Use preset</option>
-                <option value="none">None (omit)</option>
-                <option value="custom">Custom (type my own)</option>
-              </select>
-              <select id="lensPreset">
+              <select id="lensSelect">
+                <option value="" selected>None (omit)</option>
                 <option value="35mm documentary">35mm documentary</option>
-                <option value="50mm portrait" selected>50mm portrait</option>
+                <option value="50mm portrait">50mm portrait</option>
                 <option value="85mm compression">85mm compression</option>
                 <option value="24mm wide hero shot">24mm wide hero shot</option>
+                <option value="__custom__">Custom…</option>
               </select>
               <input id="lensCustom" class="hidden" placeholder="Type your camera/lens…" />
             </div>
 
             <div>
               <label>Aspect Ratio</label>
-              <select id="arMode">
-                <option value="preset" selected>Use preset</option>
-                <option value="none">None (omit)</option>
-                <option value="custom">Custom (type my own)</option>
-              </select>
-              <select id="arPreset">
+              <select id="arSelect">
+                <option value="" selected>None (omit)</option>
                 <option value="1:1">1:1</option>
                 <option value="4:5">4:5</option>
-                <option value="9:16" selected>9:16</option>
+                <option value="9:16">9:16</option>
                 <option value="16:9">16:9</option>
+                <option value="__custom__">Custom…</option>
               </select>
               <input id="arCustom" class="hidden" placeholder="Type your aspect ratio…" />
             </div>
@@ -371,15 +398,12 @@
           <div class="row">
             <div>
               <label>Quality</label>
-              <select id="qualityMode">
-                <option value="preset" selected>Use preset</option>
-                <option value="none">None (omit)</option>
-                <option value="custom">Custom (type my own)</option>
-              </select>
-              <select id="qualityPreset">
-                <option value="Ultra-detailed, realistic texture" selected>Ultra-detailed, realistic texture</option>
+              <select id="qualitySelect">
+                <option value="" selected>None (omit)</option>
+                <option value="Ultra-detailed, realistic texture">Ultra-detailed, realistic texture</option>
                 <option value="Clean, polished, minimal grain">Clean, polished, minimal grain</option>
                 <option value="Film grain, editorial realism">Film grain, editorial realism</option>
+                <option value="__custom__">Custom…</option>
               </select>
               <input id="qualityCustom" class="hidden" placeholder="Type your quality instruction…" />
             </div>
@@ -396,7 +420,7 @@
 
         <label>Reference Images (1–10)</label>
         <input id="imgFiles" type="file" accept="image/*" multiple />
-        <div class="tiny">Upload up to 10 images. Label each image to make the prompt smarter (no paid image analysis here).</div>
+        <div class="tiny">Upload up to 10 images. Label each image to make the prompt smarter (no server uploads).</div>
         <div id="imgPreview" class="imgGrid"></div>
 
         <div class="btns">
@@ -416,7 +440,7 @@
         <div id="output" class="out">Fill the inputs and tap “Generate”.</div>
         <div id="status" class="hint"></div>
         <div class="hint">
-          <span class="ok">✓</span> Client-side only. Images stay in your browser (no server uploads).
+          <span class="ok">✓</span> Client-side only. Images stay in your browser.
         </div>
 
         <div class="footer">
@@ -428,8 +452,76 @@
     </div>
   </div>
 
+  <!-- Password Modal -->
+  <div id="pwBackdrop" class="modalBackdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <div class="modal">
+      <div class="modalTop">
+        <div>
+          <h3 id="pwTitle">🔒 Password Required</h3>
+          <p>Enter the access password to run this action.</p>
+        </div>
+        <button class="xBtn" id="pwClose" type="button">✕</button>
+      </div>
+
+      <label>Password</label>
+      <input id="pwInput" type="password" placeholder="Enter password…" autocomplete="off" />
+
+      <div id="pwMsg" class="modalMsg tiny"></div>
+
+      <div class="modalActions">
+        <button class="secondary" id="pwCancel" type="button">Cancel</button>
+        <button id="pwSubmit" type="button">Continue</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   const $ = (id) => document.getElementById(id);
+
+  // ===== Password Gate (PROMPTS EVERY TIME) =====
+  const ACCESS_PASSWORD = "PROMPT";
+  let pendingAction = null;
+
+  function openPasswordModal(actionFn){
+    pendingAction = actionFn;
+    $("pwMsg").textContent = "";
+    $("pwInput").value = "";
+    $("pwBackdrop").classList.remove("hidden");
+    setTimeout(() => $("pwInput").focus(), 60);
+  }
+
+  function closePasswordModal(){
+    pendingAction = null;
+    $("pwBackdrop").classList.add("hidden");
+  }
+
+  function submitPassword(){
+    const entered = ($("pwInput").value || "").trim();
+    if(entered !== ACCESS_PASSWORD){
+      $("pwMsg").innerHTML = `<span class="bad">Incorrect password.</span>`;
+      $("pwInput").value = "";
+      $("pwInput").focus();
+      return;
+    }
+    const fn = pendingAction;
+    closePasswordModal();
+    if(typeof fn === "function") fn();
+  }
+
+  $("pwSubmit").addEventListener("click", submitPassword);
+  $("pwCancel").addEventListener("click", closePasswordModal);
+  $("pwClose").addEventListener("click", closePasswordModal);
+
+  // Enter key submits in modal
+  $("pwInput").addEventListener("keydown", (e) => {
+    if(e.key === "Enter") submitPassword();
+    if(e.key === "Escape") closePasswordModal();
+  });
+
+  // Clicking backdrop closes
+  $("pwBackdrop").addEventListener("click", (e) => {
+    if(e.target === $("pwBackdrop")) closePasswordModal();
+  });
 
   function wordCount(text){
     return text.trim().split(/\s+/).filter(Boolean).length;
@@ -439,11 +531,26 @@
   function syncLmArenaUI(){
     const isLma = $("platform").value === "lmarena";
     $("lmaWrap").classList.toggle("hidden", !isLma);
+
     const direct = $("lmaMode").value === "direct";
     $("lmaDirectOnly").classList.toggle("hidden", !(isLma && direct));
+
+    syncLmaModelModeUI();
   }
   $("platform").addEventListener("change", syncLmArenaUI);
   $("lmaMode").addEventListener("change", syncLmArenaUI);
+
+  function syncLmaModelModeUI(){
+    const isLma = $("platform").value === "lmarena";
+    const direct = $("lmaMode").value === "direct";
+    const show = isLma && direct;
+
+    const mode = $("lmaModelMode") ? $("lmaModelMode").value : "none";
+    $("lmaPresetWrap").classList.toggle("hidden", !(show && mode === "preset"));
+    $("lmaCustomWrap").classList.toggle("hidden", !(show && mode === "custom"));
+  }
+  $("lmaModelMode").addEventListener("change", syncLmaModelModeUI);
+
   syncLmArenaUI();
 
   // ===== Optional fields UI =====
@@ -461,74 +568,52 @@
 
   function syncOptionalVisibilityRules(){
     const onlyFilled = $("onlyFilled").checked;
-
     $("hideOptionalChip").classList.toggle("hidden", !onlyFilled);
-
-    if(!onlyFilled){
-      return; // user can manually hide/show optional section
-    }
+    if(!onlyFilled) return;
 
     const hideOpt = $("hideOptional").checked;
-    if(hideOpt){
-      setOptionalVisible(false);
-    }else{
-      setOptionalVisible(true);
-    }
+    setOptionalVisible(!hideOpt);
   }
 
   $("onlyFilled").addEventListener("change", syncOptionalVisibilityRules);
   $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
   syncOptionalVisibilityRules();
 
-  // If user types in optional fields while hidden, auto-show optional section
-  ["vibeCustom","lightingCustom","lensCustom","arCustom","qualityCustom","overlay","details"].forEach(id => {
-    $(id).addEventListener("input", () => {
-      if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
-        setOptionalVisible(true);
-        $("hideOptional").checked = false;
-        syncOptionalVisibilityRules();
-      }
-    });
-  });
-
-  // ===== Tri-field (Preset / None / Custom) helpers =====
-  function bindTriField(modeId, presetId, customId){
-    const mode = $(modeId);
-    const preset = $(presetId);
+  // ===== Custom reveal for single-select fields =====
+  function bindCustomSelect(selectId, customId){
+    const sel = $(selectId);
     const custom = $(customId);
 
     function sync(){
-      const m = mode.value;
-      preset.classList.toggle("hidden", m !== "preset");
-      custom.classList.toggle("hidden", m !== "custom");
+      const isCustom = sel.value === "__custom__";
+      custom.classList.toggle("hidden", !isCustom);
+
+      if(isCustom){
+        // show optional section if hidden and user is using hide mode
+        if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
+          setOptionalVisible(true);
+          $("hideOptional").checked = false;
+          syncOptionalVisibilityRules();
+        }
+        setTimeout(() => custom.focus(), 50);
+      }
     }
-    mode.addEventListener("change", sync);
+    sel.addEventListener("change", sync);
     sync();
   }
 
-  function triValue(modeId, presetId, customId){
-    const m = $(modeId).value;
-    if(m === "none") return "";
-    if(m === "custom") return ($(customId).value || "").trim();
-    return ($(presetId).value || "").trim();
+  bindCustomSelect("vibeSelect","vibeCustom");
+  bindCustomSelect("lightingSelect","lightingCustom");
+  bindCustomSelect("lensSelect","lensCustom");
+  bindCustomSelect("arSelect","arCustom");
+  bindCustomSelect("qualitySelect","qualityCustom");
+
+  function selectValue(selectId, customId){
+    const sel = $(selectId).value;
+    if(sel === "") return "";              // None (omit)
+    if(sel === "__custom__") return ($(customId).value || "").trim();
+    return sel.trim();
   }
-
-  bindTriField("vibeMode","vibePreset","vibeCustom");
-  bindTriField("lightingMode","lightingPreset","lightingCustom");
-  bindTriField("lensMode","lensPreset","lensCustom");
-  bindTriField("arMode","arPreset","arCustom");
-  bindTriField("qualityMode","qualityPreset","qualityCustom");
-
-  // Auto-show optional section when switching to custom mode (nice UX)
-  ["vibeMode","lightingMode","lensMode","arMode","qualityMode"].forEach(id => {
-    $(id).addEventListener("change", () => {
-      if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
-        setOptionalVisible(true);
-        $("hideOptional").checked = false;
-        syncOptionalVisibilityRules();
-      }
-    });
-  });
 
   // ===== Image pack =====
   let imagePack = []; // {name, dataUrl, role, keep, change}
@@ -647,24 +732,22 @@
   // ===== Prompt building =====
   function baseData(){
     const platform = $("platform").value;
-    const onlyFilled = $("onlyFilled").checked;
     const verbose = $("verbose").checked;
     const strict120 = $("strict120").checked;
 
     const goal = ($("goalPreset").value || "").trim();
 
-    const vibe = triValue("vibeMode","vibePreset","vibeCustom");
-    const lighting = triValue("lightingMode","lightingPreset","lightingCustom");
-    const lens = triValue("lensMode","lensPreset","lensCustom");
-    const ar = triValue("arMode","arPreset","arCustom");
-    const quality = triValue("qualityMode","qualityPreset","qualityCustom");
+    const vibe = selectValue("vibeSelect","vibeCustom");
+    const lighting = selectValue("lightingSelect","lightingCustom");
+    const lens = selectValue("lensSelect","lensCustom");
+    const ar = selectValue("arSelect","arCustom");
+    const quality = selectValue("qualitySelect","qualityCustom");
 
     const subjectRaw = ($("subject").value || "").trim();
     const settingRaw = ($("setting").value || "").trim();
     const details = ($("details").value || "").trim();
     const overlay = ($("overlay").value || "").trim();
 
-    // subject + setting always have fallback for usable prompts
     const subject = subjectRaw || "a subject";
     const setting = settingRaw || "a fitting environment";
 
@@ -672,43 +755,27 @@
 
     const lines = [];
     lines.push("Pocket Cinema — Prompt Generator (© Nathan Histed).");
-
-    // Goal is always present (simple + stable)
     if(goal) lines.push(`Goal: ${goal}.`);
-
     lines.push(`Subject: ${subject}.`);
     lines.push(`Setting: ${setting}.`);
 
-    // Optional fields: include only if (a) onlyFilled is OFF OR (b) field not empty
-    function maybePush(label, value){
+    function maybe(label, value){
       if(!value) return;
       lines.push(`${label}: ${value}.`);
     }
 
-    if(!onlyFilled){
-      // if user didn't choose None, vibe/lighting/etc will still have preset values (default)
-      maybePush("Style", vibe || "");
-      maybePush("Lighting", lighting || "");
-      if(lens){
-        lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
-      }
-      maybePush("Quality", quality || "");
-      maybePush("Aspect ratio", ar || "");
-    }else{
-      // only include if they actually set it (preset/custom) AND not None
-      maybePush("Style", vibe);
-      maybePush("Lighting", lighting);
-      if(lens){
-        lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
-      }
-      maybePush("Quality", quality);
-      maybePush("Aspect ratio", ar);
+    // Optional fields naturally omit when None is selected (empty string)
+    maybe("Style", vibe);
+    maybe("Lighting", lighting);
+    if(lens){
+      lines.push(verbose ? `Camera: ${lens}, sharp focus, strong depth, clean composition.` : `Camera: ${lens}.`);
     }
+    maybe("Quality", quality);
+    maybe("Aspect ratio", ar);
 
     if(details) lines.push(`Must include: ${details}.`);
     if(overlay) lines.push(`Text overlay: ${overlay}.`);
 
-    // Compact one-line
     const oneParts = [];
     if(goal) oneParts.push(`Goal: ${goal}`);
     oneParts.push(subject);
@@ -721,16 +788,26 @@
 
     const oneLine = `${oneParts.join("; ")}. ${details ? `Must include: ${details}. ` : ""}${overlay ? `Text overlay: ${overlay}. ` : ""}${negatives}`.trim();
 
-    return { platform, onlyFilled, verbose, strict120, lines, oneLine, negatives, overlay, details };
+    return { platform, verbose, strict120, lines, oneLine, negatives, overlay };
   }
 
+  // HIDE MODEL LINE when "None" is selected:
   function lmArenaHeader(){
     const mode = $("lmaMode").value;
     if(mode === "battle") return "LM ARENA (Battle / unknown model)";
+
+    // Direct
+    const modelMode = $("lmaModelMode").value;
+    if(modelMode === "none") return "LM Arena Direct";
+
+    if(modelMode === "custom"){
+      const manual = ($("lmaManual").value || "").trim();
+      return manual ? `LM Arena Direct — Model: ${manual}` : "LM Arena Direct";
+    }
+
+    // preset
     const picked = ($("lmaModelPick").value || "").trim();
-    const manual = ($("lmaManual").value || "").trim();
-    const modelName = manual || picked || "(not specified)";
-    return `LM Arena Direct — Model: ${modelName}`;
+    return picked ? `LM Arena Direct — Model: ${picked}` : "LM Arena Direct";
   }
 
   function formatOutput(d){
@@ -770,14 +847,14 @@
 
   function enforce120(text, d){
     const wc = wordCount(text);
-    if(wc <= 120) return { text, wc, ok:true };
+    if(wc <= 120) return text;
 
     let imgMini = "";
     if(imagePack.length){
       imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
     }
     const compact = `${imgMini}\n${d.oneLine}`.trim();
-    return { text: compact, wc: wordCount(compact), ok: (wordCount(compact) <= 120) };
+    return compact;
   }
 
   function render(text){
@@ -790,35 +867,32 @@
     $("status").innerHTML = status;
   }
 
-  // ===== Buttons =====
-  $("gen").addEventListener("click", () => {
+  // ===== Action functions (wrapped by password modal) =====
+  function doGenerate(){
     const d = baseData();
     let out = formatOutput(d);
-    if(d.strict120){
-      out = enforce120(out, d).text;
-    }
+    if(d.strict120) out = enforce120(out, d);
     render(out);
-  });
+  }
 
-  $("shorten").addEventListener("click", () => {
+  function doShorten(){
     const d = baseData();
-    const mini = enforce120(formatOutput(d), d).text;
+    const mini = enforce120(formatOutput(d), d);
     render(mini);
     $("status").innerHTML += ` — <span class="ok">shortened</span>`;
-  });
+  }
 
-  $("copy").addEventListener("click", async () => {
+  async function doCopy(){
     const text = $("output").textContent;
     try{
       await navigator.clipboard.writeText(text);
       $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
     }catch(e){
-      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.</span>`;
+      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.`;
     }
-  });
+  }
 
-  $("clear").addEventListener("click", () => {
-    // core resets
+  function doClear(){
     $("platform").value = "gemini";
     $("goalPreset").value = "Promo / Poster";
     $("subject").value = "";
@@ -829,25 +903,19 @@
     $("strict120").checked = false;
     $("verbose").checked = true;
 
-    // optional tri-field resets
-    $("vibeMode").value = "preset"; $("vibePreset").value = "Cinematic"; $("vibeCustom").value = "";
-    $("lightingMode").value = "preset"; $("lightingPreset").value = "Softbox studio, clean highlights"; $("lightingCustom").value = "";
-    $("lensMode").value = "preset"; $("lensPreset").value = "50mm portrait"; $("lensCustom").value = "";
-    $("arMode").value = "preset"; $("arPreset").value = "9:16"; $("arCustom").value = "";
-    $("qualityMode").value = "preset"; $("qualityPreset").value = "Ultra-detailed, realistic texture"; $("qualityCustom").value = "";
-
-    // sync tri-field visibility
-    bindTriField("vibeMode","vibePreset","vibeCustom");
-    bindTriField("lightingMode","lightingPreset","lightingCustom");
-    bindTriField("lensMode","lensPreset","lensCustom");
-    bindTriField("arMode","arPreset","arCustom");
-    bindTriField("qualityMode","qualityPreset","qualityCustom");
+    // Optional field dropdowns reset to None
+    $("vibeSelect").value = ""; $("vibeCustom").value = ""; $("vibeCustom").classList.add("hidden");
+    $("lightingSelect").value = ""; $("lightingCustom").value = ""; $("lightingCustom").classList.add("hidden");
+    $("lensSelect").value = ""; $("lensCustom").value = ""; $("lensCustom").classList.add("hidden");
+    $("arSelect").value = ""; $("arCustom").value = ""; $("arCustom").classList.add("hidden");
+    $("qualitySelect").value = ""; $("qualityCustom").value = ""; $("qualityCustom").classList.add("hidden");
 
     $("overlay").value = "";
     $("details").value = "";
 
     // LM Arena reset
     $("lmaMode").value = "battle";
+    $("lmaModelMode").value = "none";
     $("lmaModelPick").value = "";
     $("lmaManual").value = "";
     syncLmArenaUI();
@@ -863,7 +931,13 @@
 
     $("output").textContent = "Fill the inputs and tap “Generate”.";
     $("status").textContent = "";
-  });
+  }
+
+  // ===== Buttons: ALWAYS PROMPT FOR PASSWORD =====
+  $("gen").addEventListener("click", () => openPasswordModal(doGenerate));
+  $("shorten").addEventListener("click", () => openPasswordModal(doShorten));
+  $("copy").addEventListener("click", () => openPasswordModal(() => { doCopy(); }));
+  $("clear").addEventListener("click", () => openPasswordModal(doClear));
 </script>
 </body>
 </html>
