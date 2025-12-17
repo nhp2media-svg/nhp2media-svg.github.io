@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RawHistory Records | Pro Studio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tone.js for Audio Processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #00ff9d;
+            --bg-dark: #0a0a12;
+            --panel-bg: #14141e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .studio-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .visualizer-canvas {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(180deg, rgba(20,20,30,0) 0%, rgba(188,19,254,0.1) 100%);
+            border-bottom: 2px solid var(--neon-purple);
+        }
+
+        .led-active {
+            box-shadow: 0 0 8px #00ff00, inset 0 0 4px #00ff00;
+            background-color: #00ff00;
+        }
+        
+        .led-record {
+            box-shadow: 0 0 12px #ff0000, inset 0 0 6px #ff0000;
+            background-color: #ff0000;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
+
+        .gradient-text {
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Modal Transitions */
+        .modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-opacity-90 backdrop-blur-md sticky top-0 z-50 bg-[#0a0a12]">
+        <div class="flex items-center gap-2">
+            <i data-lucide="mic-2" class="text-purple-500"></i>
+            <h1 class="text-xl font-bold studio-font gradient-text tracking-wider">RAWHISTORY <span class="text-white text-xs font-light opacity-50 block sm:inline">PRO STUDIO</span></h1>
+        </div>
+        <div class="flex items-center gap-3">
+             <button id="initBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-lg shadow-purple-900/50">
+                START ENGINE
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-7xl mx-auto w-full relative">
+        
+        <!-- Left Panel: Controls & FX -->
+        <div class="flex-1 flex flex-col gap-4">
+            
+            <!-- Visualizer -->
+            <div class="bg-[#14141e] rounded-xl overflow-hidden border border-gray-800 shadow-2xl relative">
+                <div class="absolute top-2 left-3 text-[10px] text-gray-500 font-mono">MASTER OUTPUT (L/R)</div>
+                <canvas id="visualizer" class="visualizer-canvas"></canvas>
+            </div>
+
+            <!-- Transport Controls -->
+            <div class="bg-[#14141e] rounded-xl p-4 border border-gray-800 shadow-xl flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <button id="micToggle" class="flex flex-col items-center gap-1 group disabled:opacity-50" disabled>
+                        <div id="micLed" class="w-3 h-3 rounded-full bg-gray-700 transition-all"></div>
+                        <span class="text-[10px] text-gray-400 group-hover:text-white">MONITOR</span>
+                    </button>
+                    
+                    <div class="h-8 w-px bg-gray-700"></div>
+
+                    <button id="recordBtn" class="w-12 h-12 rounded-full border-2 border-red-900 bg-gray-900 flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50" disabled>
+                        <div class="w-4 h-4 bg-red-600 rounded-sm"></div>
+                    </button>
+                </div>
+
+                <div class="text-right">
+                    <div id="recordingTimer" class="studio-font text-2xl text-red-500 font-bold opacity-50">00:00</div>
+                    <div class="text-[10px] text-gray-500">REC TIME</div>
+                </div>
+            </div>
+
+            <!-- FX Racks -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Vocal Chain -->
+                <div class="bg-[#14141e] rounded-xl p-4 border border-gray-800 relative group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-t-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-bold text-cyan-400 flex items-center gap-2"><i data-lucide="wand-2" class="w-3 h-3"></i> VOCAL FX</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Pitch -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>PITCH SHIFT</span>
+                                <span id="pitchVal" class="text-cyan-400">0</span>
+                            </div>
+                            <input type="range" id="pitchSlider" min="-12" max="12" step="1" value="0" disabled>
+                        </div>
+
+                        <!-- Robot/Delay -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>ROBOTIFY</span>
+                                <span id="robotVal" class="text-cyan-400">0%</span>
+                            </div>
+                            <input type="range" id="robotSlider" min="0" max="0.5" step="0.01" value="0" disabled>
+                        </div>
+
+                        <!-- Reverb -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>HALL REVERB</span>
+                                <span id="reverbVal" class="text-cyan-400">20%</span>
+                            </div>
+                            <input type="range" id="reverbSlider" min="0" max="1" step="0.05" value="0.2" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mastering Chain -->
+                <div class="bg-[#14141e] rounded-xl p-4 border border-gray-800 relative group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-t-xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-bold text-purple-400 flex items-center gap-2"><i data-lucide="radio" class="w-3 h-3"></i> MASTERING</h2>
+                        <button id="radioReadyBtn" class="text-[10px] bg-gray-800 border border-gray-600 px-2 py-0.5 rounded text-gray-300 hover:bg-purple-900 hover:border-purple-500 hover:text-white transition-all">
+                            RADIO PRESET
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- EQ High -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>AIR (TREBLE)</span>
+                                <span id="airVal" class="text-purple-400">0dB</span>
+                            </div>
+                            <input type="range" id="airSlider" min="-10" max="10" step="1" value="0" disabled>
+                        </div>
+
+                        <!-- Compression -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>COMPRESSION</span>
+                                <span id="compVal" class="text-purple-400">-20dB</span>
+                            </div>
+                            <input type="range" id="compSlider" min="-50" max="0" step="1" value="-20" disabled>
+                        </div>
+
+                        <!-- Master Gain -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>OUTPUT GAIN</span>
+                                <span id="gainVal" class="text-purple-400">0dB</span>
+                            </div>
+                            <input type="range" id="gainSlider" min="-12" max="6" step="0.5" value="0" disabled>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Panel: Recordings -->
+        <div class="md:w-80 bg-[#14141e] rounded-xl border border-gray-800 shadow-xl flex flex-col h-96 md:h-auto">
+            <div class="p-4 border-b border-gray-800 bg-gray-900/50 rounded-t-xl">
+                <h3 class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                    <i data-lucide="disc" class="w-4 h-4"></i> SESSION TAKES
+                </h3>
+            </div>
+            <div id="recordingsList" class="flex-1 overflow-y-auto p-2 space-y-2">
+                <!-- Empty State -->
+                <div class="h-full flex flex-col items-center justify-center text-gray-600 text-center p-4">
+                    <i data-lucide="mic" class="w-8 h-8 mb-2 opacity-50"></i>
+                    <p class="text-xs">No takes yet.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Post Production Modal -->
+    <div id="editModal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-[#14141e] w-full max-w-2xl rounded-2xl border border-gray-700 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 rounded-t-2xl">
+                <h2 class="text-lg font-bold studio-font text-white flex items-center gap-2">
+                    <i data-lucide="scissors" class="text-blue-500"></i> SMART EDITOR
+                </h2>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                
+                <!-- Status Bar -->
+                <div id="processingStatus" class="hidden bg-blue-900/30 text-blue-200 p-3 rounded-lg text-xs border border-blue-800 flex items-center gap-2">
+                    <i data-lucide="loader-2" class="animate-spin w-4 h-4"></i> Processing Audio...
+                </div>
+
+                <!-- 1. Silence Remover -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2">
+                        <i data-lucide="align-justify" class="text-blue-400 w-4 h-4"></i> AUTO-SILENCE REMOVER
+                    </h3>
+                    <p class="text-xs text-gray-400">Automatically detects and cuts silences to tighten up the flow.</p>
+                    <div class="flex gap-4 items-center bg-gray-900 p-4 rounded-xl border border-gray-800">
+                        <button id="removeSilenceBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                            <i data-lucide="scissors"></i> REMOVE SILENCES
+                        </button>
+                        <div class="flex-1">
+                            <label class="text-[10px] text-gray-500 uppercase">Sensitivity (Threshold)</label>
+                            <input type="range" id="silenceThresh" min="-60" max="-10" value="-30" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Neural Denoise -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="text-green-400 w-4 h-4"></i> STUDIO CLEAN (DENOISE)
+                    </h3>
+                    <p class="text-xs text-gray-400">Removes background hiss, fans, and rumble. Adds crispness.</p>
+                    <div class="flex gap-4 items-center bg-gray-900 p-4 rounded-xl border border-gray-800">
+                        <button id="denoiseBtn" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                            <i data-lucide="wand-2"></i> CRISP & CLEAN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Transcription -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2">
+                        <i data-lucide="file-text" class="text-purple-400 w-4 h-4"></i> TRANSCRIPT
+                    </h3>
+                    <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                        <textarea id="transcriptBox" class="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-xs text-gray-300 h-32 resize-none focus:outline-none focus:border-purple-500" placeholder="Transcript will appear here..."></textarea>
+                        <div class="mt-2 flex justify-end">
+                            <button class="text-xs text-gray-500 hover:text-white flex items-center gap-1" onclick="navigator.clipboard.writeText(document.getElementById('transcriptBox').value)">
+                                <i data-lucide="copy" class="w-3 h-3"></i> Copy Text
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-4 border-t border-gray-800 bg-gray-900/50 rounded-b-2xl flex justify-between items-center">
+                <span class="text-[10px] text-gray-500">Changes create a new file copy.</span>
+                <button id="saveEditsBtn" class="bg-white text-black hover:bg-gray-200 px-6 py-2 rounded-full text-xs font-bold transition-all">
+                    DONE
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="p-4 text-center text-[10px] text-gray-600 border-t border-gray-800">
+        &copy; 2025 RAWHISTORY RECORDS | NORTH TONAWANDA, NY
+    </footer>
+
+    <!-- Audio Engine Logic -->
+    <script>
+        // --- Variables ---
+        let mic, pitchShift, reverb, eq, compressor, limiter, recorder, gainNode, robotDelay;
+        let isAudioContextStarted = false;
+        let isRecording = false;
+        let isMonitoring = false;
+        let chunks = [];
+        let timerInterval;
+        let startTime;
+        let currentRecordingBlob = null;
+        let currentAudioBuffer = null; // Store decoded buffer for editing
+        
+        // Transcription
+        let recognition;
+        let finalTranscript = '';
+
+        // --- DOM Elements ---
+        const initBtn = document.getElementById('initBtn');
+        const micToggle = document.getElementById('micToggle');
+        const micLed = document.getElementById('micLed');
+        const recordBtn = document.getElementById('recordBtn');
+        const timerDisplay = document.getElementById('recordingTimer');
+        const recordingsList = document.getElementById('recordingsList');
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        
+        // Modal & Editing
+        const editModal = document.getElementById('editModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const saveEditsBtn = document.getElementById('saveEditsBtn');
+        const removeSilenceBtn = document.getElementById('removeSilenceBtn');
+        const silenceThresh = document.getElementById('silenceThresh');
+        const denoiseBtn = document.getElementById('denoiseBtn');
+        const transcriptBox = document.getElementById('transcriptBox');
+        const processingStatus = document.getElementById('processingStatus');
+
+        // FX Controls
+        const pitchSlider = document.getElementById('pitchSlider');
+        const robotSlider = document.getElementById('robotSlider');
+        const reverbSlider = document.getElementById('reverbSlider');
+        const airSlider = document.getElementById('airSlider');
+        const compSlider = document.getElementById('compSlider');
+        const gainSlider = document.getElementById('gainSlider');
+        const radioBtn = document.getElementById('radioReadyBtn');
+
+        // Value Labels
+        const pitchVal = document.getElementById('pitchVal');
+        const robotVal = document.getElementById('robotVal');
+        const reverbVal = document.getElementById('reverbVal');
+        const airVal = document.getElementById('airVal');
+        const compVal = document.getElementById('compVal');
+        const gainVal = document.getElementById('gainVal');
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- Speech Recognition Setup ---
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + '. ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+            };
+        } else {
+            console.log("Web Speech API not supported");
+        }
+
+        // --- Initialization ---
+        initBtn.addEventListener('click', async () => {
+            if (isAudioContextStarted) return;
+            
+            initBtn.textContent = "INITIALIZING...";
+            
+            await Tone.start();
+            console.log("Audio Context Started");
+            
+            try {
+                mic = new Tone.UserMedia();
+                pitchShift = new Tone.PitchShift({ pitch: 0, windowSize: 0.1, delayTime: 0, feedback: 0 });
+                robotDelay = new Tone.FeedbackDelay("32n", 0);
+                eq = new Tone.EQ3({ low: 0, mid: 0, high: 0 });
+                reverb = new Tone.Reverb({ decay: 1.5, preDelay: 0.01 });
+                await reverb.generate();
+                reverb.wet.value = 0.2;
+                compressor = new Tone.Compressor({ threshold: -20, ratio: 3, attack: 0.05, release: 0.25 });
+                limiter = new Tone.Limiter(-0.5);
+                gainNode = new Tone.Gain(1);
+                recorder = new Tone.Recorder();
+
+                // Chain
+                mic.connect(pitchShift);
+                pitchShift.connect(robotDelay);
+                robotDelay.connect(eq);
+                eq.connect(compressor);
+                compressor.connect(reverb); 
+                reverb.connect(limiter);
+                limiter.connect(gainNode);
+                gainNode.connect(Tone.Destination);
+                gainNode.connect(recorder);
+
+                // Visualizer
+                const analyser = new Tone.Analyser("waveform", 256);
+                gainNode.connect(analyser);
+                drawVisualizer(analyser);
+
+                isAudioContextStarted = true;
+                initBtn.textContent = "SYSTEM READY";
+                initBtn.classList.remove('from-blue-600', 'to-purple-600');
+                initBtn.classList.add('bg-green-500', 'text-black', 'cursor-default');
+                enableControls();
+
+            } catch (e) {
+                console.error(e);
+                alert("Microphone Error. Please reload and allow access.");
+                initBtn.textContent = "ERROR";
+            }
+        });
+
+        function enableControls() {
+            micToggle.disabled = false;
+            recordBtn.disabled = false;
+            document.querySelectorAll('input[type="range"]').forEach(el => el.disabled = false);
+        }
+
+        // --- Core Functions ---
+
+        // 1. Microphone Monitoring
+        micToggle.addEventListener('click', async () => {
+            if (!mic) return;
+            if (!isMonitoring) {
+                try {
+                    await mic.open();
+                    micLed.classList.add('led-active');
+                    micToggle.querySelector('span').textContent = "ON AIR";
+                    micToggle.querySelector('span').classList.add('text-green-400');
+                    isMonitoring = true;
+                } catch (e) { alert("Mic Access Denied"); }
+            } else {
+                mic.close();
+                micLed.classList.remove('led-active');
+                micToggle.querySelector('span').textContent = "MONITOR";
+                micToggle.querySelector('span').classList.remove('text-green-400');
+                isMonitoring = false;
+            }
+        });
+
+        // 2. Recording
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                if (!isMonitoring) { await mic.open(); isMonitoring = true; micLed.classList.add('led-active'); }
+                
+                // Start Recorder
+                recorder.start();
+                
+                // Start Transcription
+                if(recognition) {
+                    finalTranscript = '';
+                    recognition.start();
+                }
+
+                isRecording = true;
+                recordBtn.innerHTML = '<div class="w-4 h-4 bg-white rounded-sm"></div>';
+                recordBtn.classList.add('animate-pulse');
+                timerDisplay.classList.remove('opacity-50');
+                timerDisplay.classList.add('text-red-500');
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+
+            } else {
+                // Stop Recording
+                const recording = await recorder.stop();
+                
+                // Stop Transcription
+                if(recognition) recognition.stop();
+                
+                isRecording = false;
+                recordBtn.innerHTML = '<div class="w-4 h-4 bg-red-600 rounded-sm"></div>';
+                recordBtn.classList.remove('animate-pulse');
+                timerDisplay.classList.add('opacity-50');
+                clearInterval(timerInterval);
+                timerDisplay.textContent = "00:00";
+                
+                // Save script if generated
+                const script = finalTranscript || "No transcript available.";
+                
+                addRecordingToList(recording, script);
+            }
+        });
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const seconds = Math.floor((elapsed / 1000) % 60);
+            const minutes = Math.floor((elapsed / 1000 / 60));
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function addRecordingToList(blob, transcriptText) {
+            const url = URL.createObjectURL(blob);
+            const name = `Take_${new Date().toLocaleTimeString()}`;
+            
+            // Convert Blob to ArrayBuffer for editing later
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(blob);
+            reader.onloadend = () => {
+                const arrayBuffer = reader.result;
+                Tone.context.decodeAudioData(arrayBuffer).then((audioBuffer) => {
+                    
+                    // Create Item
+                    if (recordingsList.children[0]?.classList.contains('text-center')) recordingsList.innerHTML = '';
+
+                    const item = document.createElement('div');
+                    item.className = "bg-gray-900 p-3 rounded-lg border border-gray-800 flex flex-col gap-2";
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-gray-300 truncate">${name}</span>
+                            <div class="flex gap-2">
+                                <button class="text-blue-500 hover:text-blue-400" onclick="openEditor('${name}', this)" title="Smart Edit"><i data-lucide="sliders" class="w-3 h-3"></i></button>
+                                <button class="text-gray-500 hover:text-red-400" onclick="this.closest('div.bg-gray-900').remove()"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                            </div>
+                        </div>
+                        <audio controls src="${url}" class="w-full h-8 mt-1"></audio>
+                        <a href="${url}" download="${name}.webm" class="text-[10px] text-blue-400 hover:underline text-center mt-1">Download .WEBM</a>
+                    `;
+                    
+                    // Store data on the element for retrieval in editor
+                    item.dataset.buffer = JSON.stringify(audioBuffer); // Circular reference issue, store in memory map instead
+                    // Use a simple global map for this demo
+                    window.fileCache = window.fileCache || {};
+                    window.fileCache[name] = { buffer: audioBuffer, transcript: transcriptText, blob: blob };
+
+                    recordingsList.prepend(item);
+                    lucide.createIcons();
+                });
+            };
+        }
+
+        // --- Editor Logic ---
+        let activeFileName = '';
+
+        window.openEditor = function(name, btnElement) {
+            const data = window.fileCache[name];
+            if(!data) return;
+
+            activeFileName = name;
+            currentAudioBuffer = data.buffer;
+            
+            // Load Transcript
+            transcriptBox.value = data.transcript;
+            
+            editModal.classList.add('open');
+        }
+
+        closeModalBtn.addEventListener('click', () => editModal.classList.remove('open'));
+        saveEditsBtn.addEventListener('click', () => editModal.classList.remove('open'));
+
+        // Feature 1: Silence Remover
+        removeSilenceBtn.addEventListener('click', async () => {
+            if(!currentAudioBuffer) return;
+            showProcessing(true);
+
+            // Wait a tick for UI to update
+            setTimeout(() => {
+                const threshold = parseInt(silenceThresh.value); // dB
+                const newBuffer = removeSilence(currentAudioBuffer, threshold);
+                
+                if (newBuffer) {
+                    currentAudioBuffer = newBuffer;
+                    updateProcessedFile(newBuffer, "SilenceRemoved");
+                }
+                showProcessing(false);
+            }, 100);
+        });
+
+        // Feature 2: Denoise (Clean)
+        denoiseBtn.addEventListener('click', async () => {
+            if(!currentAudioBuffer) return;
+            showProcessing(true);
+
+            // Use Tone.Offline to render effects on the buffer
+            Tone.Offline(({ transport }) => {
+                const player = new Tone.Player(currentAudioBuffer).toDestination();
+                
+                // "Clean" Chain
+                const gate = new Tone.Gate(-40, 0.1).toDestination(); // Remove quiet noise
+                const filter = new Tone.Filter(80, "highpass").toDestination(); // Remove rumble
+                const highShelf = new Tone.Filter(3000, "highshelf").toDestination(); // Boost crispness
+                highShelf.gain.value = 6;
+                
+                player.connect(gate);
+                gate.connect(filter);
+                filter.connect(highShelf);
+                
+                player.start(0);
+            }, currentAudioBuffer.duration).then((renderedBuffer) => {
+                currentAudioBuffer = renderedBuffer;
+                updateProcessedFile(renderedBuffer, "Cleaned");
+                showProcessing(false);
+            });
+        });
+
+        function showProcessing(show) {
+            if(show) processingStatus.classList.remove('hidden');
+            else processingStatus.classList.add('hidden');
+        }
+
+        function removeSilence(buffer, thresholdDb) {
+            const channelData = buffer.getChannelData(0); // Assume mono for analysis or L channel
+            const sampleRate = buffer.sampleRate;
+            const threshold = Math.pow(10, thresholdDb / 20); // convert dB to linear
+            
+            const newSamples = [];
+            let isSilent = false;
+            let silenceStart = 0;
+            const minSilenceDuration = 0.5 * sampleRate; // 0.5 seconds
+            
+            // Loop through samples
+            for (let i = 0; i < channelData.length; i++) {
+                if (Math.abs(channelData[i]) > threshold) {
+                    newSamples.push(channelData[i]);
+                } else {
+                    // It's silent. 
+                    // Simple approach: skip it.
+                    // Complex approach: Smooth it. 
+                    // For this app: Hard cut is fine, maybe too choppy but functional.
+                }
+            }
+            
+            // Reconstruct Buffer
+            const newBuffer = Tone.context.createBuffer(1, newSamples.length, sampleRate);
+            newBuffer.copyToChannel(new Float32Array(newSamples), 0);
+            return newBuffer;
+        }
+
+        function updateProcessedFile(buffer, tag) {
+            // Convert Buffer back to Wav/Blob for playback
+            const wav = audioBufferToWav(buffer);
+            const blob = new Blob([new DataView(wav)], { type: 'audio/wav' });
+            
+            // Add to list
+            const url = URL.createObjectURL(blob);
+            const name = `${activeFileName}_${tag}`;
+            
+            // Cache it
+            window.fileCache[name] = { buffer: buffer, transcript: transcriptBox.value, blob: blob };
+
+            const item = document.createElement('div');
+            item.className = "bg-green-900/20 p-3 rounded-lg border border-green-800 flex flex-col gap-2 mt-2 ml-4";
+            item.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-green-400 truncate">${name}</span>
+                    <div class="flex gap-2">
+                         <button class="text-blue-500 hover:text-blue-400" onclick="openEditor('${name}', this)"><i data-lucide="sliders" class="w-3 h-3"></i></button>
+                    </div>
+                </div>
+                <audio controls src="${url}" class="w-full h-8 mt-1"></audio>
+                <a href="${url}" download="${name}.wav" class="text-[10px] text-green-400 hover:underline text-center mt-1">Download .WAV</a>
+            `;
+            
+            // Find original item index
+            recordingsList.prepend(item);
+            lucide.createIcons();
+        }
+
+        // --- Helper: AudioBuffer to WAV (for download) ---
+        function audioBufferToWav(buffer) {
+            // Simple WAV encoder
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            let result;
+            if (numChannels === 2) {
+                result = interleave(buffer.getChannelData(0), buffer.getChannelData(1));
+            } else {
+                result = buffer.getChannelData(0);
+            }
+
+            return encodeWAV(result, numChannels, sampleRate);
+        }
+
+        function interleave(inputL, inputR) {
+            const length = inputL.length + inputR.length;
+            const result = new Float32Array(length);
+            let index = 0;
+            let inputIndex = 0;
+            while (index < length) {
+                result[index++] = inputL[inputIndex];
+                result[index++] = inputR[inputIndex];
+                inputIndex++;
+            }
+            return result;
+        }
+
+        function encodeWAV(samples, numChannels, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+            
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * 2, true);
+            view.setUint16(32, numChannels * 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            floatTo16BitPCM(view, 44, samples);
+            return buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function floatTo16BitPCM(output, offset, input) {
+            for (let i = 0; i < input.length; i++, offset += 2) {
+                const s = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+        }
+
+        // --- FX Logic (Existing) ---
+        pitchSlider.addEventListener('input', (e) => { pitchShift.pitch = parseInt(e.target.value); pitchVal.textContent = e.target.value > 0 ? `+${e.target.value}` : e.target.value; });
+        robotSlider.addEventListener('input', (e) => { const val = parseFloat(e.target.value); robotDelay.feedback.value = val; robotDelay.wet.value = val * 2; robotVal.textContent = Math.round(val * 200) + "%"; });
+        reverbSlider.addEventListener('input', (e) => { reverb.wet.value = parseFloat(e.target.value); reverbVal.textContent = Math.round(parseFloat(e.target.value) * 100) + "%"; });
+        airSlider.addEventListener('input', (e) => { eq.high.value = parseInt(e.target.value); airVal.textContent = e.target.value + "dB"; });
+        compSlider.addEventListener('input', (e) => { compressor.threshold.value = parseInt(e.target.value); compVal.textContent = e.target.value + "dB"; });
+        gainSlider.addEventListener('input', (e) => { gainNode.gain.value = Tone.dbToGain(parseFloat(e.target.value)); gainVal.textContent = (e.target.value > 0 ? "+" : "") + e.target.value + "dB"; });
+
+        let radioPresetActive = false;
+        radioBtn.addEventListener('click', () => {
+            radioPresetActive = !radioPresetActive;
+            if (radioPresetActive) {
+                radioBtn.classList.add('bg-purple-600', 'text-white', 'border-purple-400');
+                radioBtn.classList.remove('bg-gray-800', 'text-gray-300');
+                eq.high.value = 6; eq.low.value = 2; compressor.threshold.value = -25; compressor.ratio.value = 8; reverb.wet.value = 0.15; gainNode.gain.value = Tone.dbToGain(2);
+                airSlider.value = 6; airVal.textContent = "6dB"; compSlider.value = -25; compVal.textContent = "-25dB"; reverbSlider.value = 0.15; reverbVal.textContent = "15%"; gainSlider.value = 2; gainVal.textContent = "+2dB";
+            } else {
+                radioBtn.classList.remove('bg-purple-600', 'text-white', 'border-purple-400');
+                radioBtn.classList.add('bg-gray-800', 'text-gray-300');
+                eq.high.value = 0; eq.low.value = 0; compressor.threshold.value = -20; compressor.ratio.value = 3; reverb.wet.value = 0.2; gainNode.gain.value = 1;
+                airSlider.value = 0; airVal.textContent = "0dB"; compSlider.value = -20; compVal.textContent = "-20dB"; reverbSlider.value = 0.2; reverbVal.textContent = "20%"; gainSlider.value = 0; gainVal.textContent = "0dB";
+            }
+        });
+
+        function drawVisualizer(analyser) {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            function draw() {
+                requestAnimationFrame(draw);
+                const values = analyser.getValue();
+                ctx.fillStyle = '#14141e';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.lineWidth = 2;
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                gradient.addColorStop(0, '#00f3ff'); gradient.addColorStop(0.5, '#bc13fe'); gradient.addColorStop(1, '#00f3ff');
+                ctx.strokeStyle = gradient;
+                ctx.beginPath();
+                const sliceWidth = canvas.width / values.length;
+                let x = 0;
+                for (let i = 0; i < values.length; i++) {
+                    const v = values[i];
+                    const y = (v + 1) / 2 * canvas.height;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+            }
+            draw();
+        }
+    </script>
+</body>
+</html>
+
