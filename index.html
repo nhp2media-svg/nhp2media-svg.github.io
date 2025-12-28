@@ -1,1356 +1,850 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="author" content="Nathan Histed" />
-  <meta name="copyright" content="© 2025 Nathan Histed. All rights reserved." />
-  <title>Pocket Cinema | Prompt Generator (© Nathan Histed)</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All-In Prompt Builder (ChatGPT Image Edit)</title>
   <style>
     :root{
-      --bg:#0b0b0f; --text:#fff; --muted:#b5b5c0; --line:#26263a;
-      --accent:#6d6dff; --accent2:#8a5cff;
-      --ok:#a6ffcf; --warn:#ffd38a; --bad:#ff7d7d;
+      --bg:#0b0c10; --card:#12141a; --text:#e9edf1; --muted:#a9b3bd;
+      --line:#232833; --accent:#2d3c58; --warn:#5a3c2d; --ok:#2d5a45;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      background:
-        radial-gradient(1200px 700px at 20% 10%, rgba(109,109,255,.18), transparent 55%),
-        radial-gradient(1000px 700px at 80% 20%, rgba(138,92,255,.14), transparent 60%),
-        var(--bg);
-      color:var(--text); min-height:100vh;
+    *{ box-sizing:border-box; font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+    body{ margin:0; background:linear-gradient(180deg,#0b0c10,#090a0d); color:var(--text); }
+    header{
+      padding:18px 16px; border-bottom:1px solid var(--line);
+      position:sticky; top:0; background:rgba(11,12,16,.92); backdrop-filter:blur(10px); z-index:5;
     }
-    .wrap{max-width:1100px; margin:0 auto; padding:22px 16px 40px;}
-    .top{
-      display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
-      padding:14px; border:1px solid var(--line); border-radius:14px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      backdrop-filter: blur(6px);
-    }
-    .brand h1{margin:0; font-size:1.1rem; letter-spacing:.2px;}
-    .brand p{margin:.35rem 0 0; color:var(--muted); font-size:.9rem; line-height:1.25;}
-    .pill{
-      border:1px solid var(--line); color:var(--muted); padding:8px 10px;
-      border-radius:999px; font-size:.82rem; background:rgba(0,0,0,.18);
-      display:flex; gap:8px; align-items:center;
-    }
+    header h1{ margin:0; font-size:16px; letter-spacing:.3px; }
+    header p{ margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.35; }
 
-    /* Nav */
-    .nav{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .nav a{
-      text-decoration:none;
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      padding:8px 10px;
-      border-radius:999px;
-      font-size:.85rem;
-    }
-    .nav a:hover{border-color:rgba(255,255,255,.22)}
-
-    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
-    @media(min-width:980px){ .grid{grid-template-columns:1fr 1fr;} }
+    main{ max-width:1100px; margin:0 auto; padding:14px 14px 110px; }
+    .grid{ display:grid; gap:12px; grid-template-columns:1fr; }
+    @media (min-width:1020px){ .grid{ grid-template-columns:1.1fr .9fr; } }
 
     .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid var(--line); border-radius:14px; padding:14px;
+      background:rgba(18,20,26,.92); border:1px solid var(--line); border-radius:14px; padding:14px;
     }
-    .card h2{margin:0 0 10px; font-size:1rem;}
-
-    label{display:block; font-size:.85rem; color:var(--muted); margin:10px 0 6px;}
-    input, select, textarea{
-      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
-      background:rgba(0,0,0,.22); color:var(--text); outline:none;
+    .card h2{
+      margin:0 0 10px; font-size:13px; color:#fff; letter-spacing:.3px;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
     }
-    textarea{min-height:92px; resize:vertical;}
-
-    .row{display:grid; grid-template-columns:1fr; gap:10px;}
-    @media(min-width:520px){ .row{grid-template-columns:1fr 1fr;} }
-
-    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    .pill{
+      font-size:11px; color:var(--muted); padding:2px 8px; border:1px solid var(--line);
+      border-radius:999px; background:#0f1117; white-space:nowrap;
+    }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .section{ margin-top:10px; }
+    .section-title{
+      margin:8px 0 10px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;
+    }
+    label{
+      display:flex; align-items:center; gap:8px; padding:8px 10px;
+      background:#0f1117; border:1px solid var(--line); border-radius:12px; font-size:12px;
+    }
+    select, input[type="text"]{
+      background:#0f1117; color:var(--text); border:1px solid var(--line);
+      border-radius:12px; padding:10px 12px; font-size:13px; outline:none;
+    }
+    select{ min-width:170px; }
+    input[type="text"]{ min-width:240px; flex:1; }
+    textarea{
+      width:100%; min-height:420px; resize:vertical; white-space:pre-wrap;
+      background:#0f1117; color:var(--text); border:1px solid var(--line);
+      border-radius:12px; padding:12px; font-size:12.5px; line-height:1.45; outline:none;
+    }
+    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
     button{
-      border:none; border-radius:12px; padding:12px 12px; font-weight:800;
-      color:#fff; background:linear-gradient(135deg, var(--accent), var(--accent2));
-      cursor:pointer;
+      border:1px solid var(--line); background:#0f1117; color:var(--text);
+      border-radius:12px; padding:10px 12px; font-size:13px; cursor:pointer;
     }
-    button.secondary{
-      background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--text);
-    }
+    button.primary{ background:#1b2433; border-color:var(--accent); }
+    button:hover{ filter:brightness(1.08); }
+    button.small{ padding:8px 10px; font-size:12px; }
+    .note{ color:var(--muted); font-size:12px; line-height:1.45; }
+    .divider{ height:1px; background:var(--line); margin:10px 0; }
 
-    .out{
-      white-space:pre-wrap; word-wrap:break-word; line-height:1.35;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      background:rgba(0,0,0,.25); border:1px dashed rgba(255,255,255,.18);
-      padding:12px; border-radius:12px; min-height:260px;
+    .panel{
+      border:1px solid var(--line); background:#0f1117; border-radius:12px; padding:10px;
     }
-    .hint{color:var(--muted); font-size:.85rem; margin-top:8px; line-height:1.35;}
-    .ok{color:var(--ok)}
-    .warn{color:var(--warn)}
-    .bad{color:var(--bad)}
-    .tiny{font-size:.78rem; color:var(--muted); margin-top:10px;}
-    a.smallLink{color:var(--accent2); text-decoration:none;}
-    a.smallLink:hover{text-decoration:underline;}
+    .panel ul{ margin:6px 0 0 18px; padding:0; color:var(--muted); font-size:12px; }
+    .badge{
+      display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px;
+      border:1px solid var(--line); background:#0f1117; color:var(--muted);
+    }
+    .badge.warn{ border-color:var(--warn); color:#f0d3c6; background:rgba(90,60,45,.25); }
+    .badge.ok{ border-color:var(--ok); color:#cfe9dc; background:rgba(45,90,69,.25); }
 
-    .switchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;}
-    .chip{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
-      padding:8px 10px;
-      border-radius:999px;
-      font-size:.82rem;
-      display:flex; align-items:center; gap:8px;
-    }
-    .chip input{width:auto; padding:0; margin:0;}
-
-    .sectionHead{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      margin-top:12px;
-      padding-top:10px;
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-    .sectionHead h3{margin:0; font-size:.95rem; color:#fff; letter-spacing:.1px;}
-
-    .optionalWrap{
-      margin-top:10px;
-      padding:12px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      background:rgba(0,0,0,.18);
-    }
-    .hidden{display:none !important;}
-
-    /* Tabs */
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-    .tabBtn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      color:#fff;
-      padding:10px 12px;
-      border-radius:999px;
-      font-weight:800;
-      font-size:.85rem;
-      cursor:pointer;
-    }
-    .tabBtn.active{
-      border-color:rgba(255,255,255,.22);
-      background:linear-gradient(135deg, rgba(109,109,255,.25), rgba(138,92,255,.18));
-    }
-
-    /* Guidance card */
-    .guide{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      border-radius:14px;
-      padding:12px;
-      margin-top:12px;
-    }
-    .guide h3{margin:0 0 8px; font-size:.95rem}
-    .guide ul{margin:8px 0 0 18px; color:var(--muted)}
-    .guide .ex{
-      margin-top:10px;
-      border:1px dashed rgba(255,255,255,.16);
-      background:rgba(0,0,0,.20);
-      padding:10px;
-      border-radius:12px;
-      color:#eaeafd;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size:.85rem;
-      white-space:pre-wrap;
-    }
-
-    /* Image pack */
-    .imgGrid{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:10px;
-      margin-top:10px;
-    }
-    @media(min-width:520px){ .imgGrid{grid-template-columns:repeat(3, 1fr);} }
-    .imgCard{
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      padding:10px;
-      background:rgba(0,0,0,.20);
-    }
-    .imgTop{display:flex; gap:10px; align-items:flex-start;}
-    .thumb{
-      width:72px; height:72px; object-fit:cover;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .imgMeta{flex:1; min-width:0;}
-    .imgName{
-      font-size:.80rem; color:var(--muted);
-      margin:0 0 6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-    .miniLabel{margin:0 0 6px; font-size:.78rem; color:var(--muted);}
-    .miniInput{
-      width:100%;
-      padding:10px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.22);
-      color:#fff;
-      margin-bottom:8px;
-    }
-
-    .footer{
-      margin-top:18px;
-      padding-top:14px;
-      border-top:1px solid rgba(255,255,255,.08);
-      color:var(--muted);
-      font-size:.82rem;
-      line-height:1.4;
-      text-align:center;
-    }
-
-    /* Password Modal */
-    .modalBackdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.65);
-      display:flex; align-items:center; justify-content:center;
-      padding:18px;
-      z-index:9999;
-    }
-    .modal{
-      width:min(520px, 100%);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:16px;
-      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      box-shadow:0 18px 60px rgba(0,0,0,.55);
-      padding:14px;
-      backdrop-filter: blur(8px);
-    }
-    .modalTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-      margin-bottom:10px;
-    }
-    .modalTop h3{margin:0; font-size:1rem;}
-    .modalTop p{margin:.35rem 0 0; color:var(--muted); font-size:.88rem; line-height:1.35;}
-    .xBtn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.25);
-      color:#fff;
-      border-radius:10px;
-      padding:8px 10px;
-      cursor:pointer;
-    }
-    .modalActions{
-      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px;
-    }
-    .modalMsg{margin-top:8px; font-size:.85rem;}
+    .footerhint{ position:fixed; bottom:12px; left:12px; right:12px; max-width:1100px; margin:0 auto; z-index:10; }
+    .toast{ display:none; padding:10px 12px; border-radius:12px; background:rgba(27,36,51,.95); border:1px solid var(--accent); font-size:12px; }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <h1>Pocket Cinema — Prompt Generator</h1>
-        <p>Learning-first. Strong prompts from clear intent + constraints. (© 2025 Nathan Histed)</p>
+<header>
+  <h1>All-In Prompt Builder (ChatGPT Image Edit)</h1>
+  <p>Auto-saves settings. Focus Targets with guardrails + warnings. Copy Pass 1 / Pass 2 / Both + Fix prompts.</p>
+</header>
 
-        <div class="nav">
-          <a href="index.html">Tool</a>
-          <a href="about.html">About</a>
+<main>
+  <div class="grid">
+
+    <!-- LEFT: Controls -->
+    <div class="card">
+      <h2>
+        <span>Controls</span>
+        <span class="pill" id="statusPill">Loaded</span>
+      </h2>
+
+      <div class="section">
+        <div class="section-title"><span>Presets</span><span class="pill">One tap</span></div>
+        <div class="row">
+          <button class="primary" id="presetClean">Full-Frame Clean (Pass 1)</button>
+          <button class="primary" id="presetCrisp">Full-Frame Crisp (Pass 1 + Pass 2)</button>
+          <button id="presetFast">Single-Pass Fast</button>
+          <button id="presetHeadshot">Headshot Drama</button>
         </div>
-      </div>
-      <div class="pill"><span>©</span><strong>Nathan Histed</strong></div>
-    </div>
-
-    <div class="grid">
-      <!-- LEFT -->
-      <div class="card">
-        <h2>Inputs</h2>
-
-        <!-- Platform -->
-        <label>Platform</label>
-        <select id="platform">
-          <option value="gemini">Gemini (nano-banana)</option>
-          <option value="grok">Grok</option>
-          <option value="sora2">Sora 2</option>
-          <option value="meta">Meta AI</option>
-          <option value="chatgpt">ChatGPT</option>
-          <option value="lmarena">LM Arena</option>
-          <option value="capcut">CapCut</option>
-        </select>
-
-        <!-- LM Arena settings -->
-        <div id="lmaWrap" class="hidden" style="margin-top:10px;">
-          <label>LM Arena mode</label>
-          <select id="lmaMode">
-            <option value="battle">Battle (unknown model)</option>
-            <option value="direct">Direct (choose model)</option>
-          </select>
-
-          <div id="lmaDirectOnly" class="hidden">
-            <label>LM Arena Model (Direct)</label>
-            <select id="lmaModelMode">
-              <option value="none" selected>None (don’t specify a model)</option>
-              <option value="preset">Choose from presets</option>
-              <option value="custom">Custom (type my own)</option>
-            </select>
-
-            <div id="lmaPresetWrap" class="hidden">
-              <label>Preset models</label>
-              <select id="lmaModelPick">
-                <option value="">(optional) Choose…</option>
-
-                <optgroup label="Google / Gemini / Imagen">
-                  <option>gemini-2.5-flash-image-preview (nano-banana)</option>
-                  <option>gemini-3-pro-image-preview (nano-banana-pro)</option>
-                  <option>imagen-4.0-generate-preview-06-06</option>
-                  <option>imagen-4.0-ultra-generate-preview-06-06</option>
-                </optgroup>
-
-                <optgroup label="OpenAI / Microsoft">
-                  <option>gpt-image-1</option>
-                  <option>gpt-image-1-mini</option>
-                  <option>dall-e-3</option>
-                  <option>mai-image-1</option>
-                </optgroup>
-
-                <optgroup label="ByteDance / Seedream">
-                  <option>seedream-4.5</option>
-                  <option>seedream-4-2k</option>
-                  <option>seedream-4-high-res-fal</option>
-                  <option>seedream-4-fal</option>
-                  <option>seededit-3.0</option>
-                </optgroup>
-
-                <optgroup label="FLUX / Other">
-                  <option>flux-2-pro</option>
-                  <option>flux-2-dev</option>
-                  <option>flux-2-flex</option>
-                  <option>ideogram-v3-quality</option>
-                  <option>stable-diffusion-v35-large</option>
-                </optgroup>
-              </select>
-            </div>
-
-            <div id="lmaCustomWrap" class="hidden">
-              <label>Custom model name</label>
-              <input id="lmaManual" placeholder="Type any model name exactly" />
-            </div>
-
-            <div class="tiny" style="margin-top:8px; line-height:1.4;">
-              Model availability changes on LM Arena.
-              <br />
-              <a class="smallLink" href="https://lmarena.ai/leaderboard/image" target="_blank">LM Arena Image Models</a>
-              <br />
-              <a class="smallLink" href="https://lmarena.ai/leaderboard/image-edit" target="_blank">LM Arena Image Edit Models</a>
-            </div>
-          </div>
-
-          <div class="tiny">Battle mode stays model-agnostic. Direct mode can specify a model.</div>
-        </div>
-
-        <!-- Toggles -->
-        <div class="switchRow">
-          <label class="chip">
-            <input type="checkbox" id="onlyFilled" />
-            <span>Only include fields that are filled</span>
-          </label>
-
-          <label class="chip hidden" id="hideOptionalChip">
-            <input type="checkbox" id="hideOptional" checked />
-            <span>Hide optional fields until used</span>
-          </label>
-
-          <label class="chip">
-            <input type="checkbox" id="strict120" />
-            <span>Strict 120-word mode (Sora-friendly)</span>
-          </label>
-
-          <label class="chip">
-            <input type="checkbox" id="verbose" checked />
-            <span>Verbose details</span>
-          </label>
-        </div>
-
-        <div class="tiny">Pick a task tab first — it sets constraints and keeps AI from going “wacky”.</div>
-
-        <!-- Tabs -->
-        <div class="tabs" role="tablist" aria-label="Task tabs">
-          <button class="tabBtn active" data-tab="tab-promo" type="button">Scene / Promo</button>
-          <button class="tabBtn" data-tab="tab-logo" type="button">Logo</button>
-          <button class="tabBtn" data-tab="tab-enhance" type="button">Photo Enhance</button>
-          <button class="tabBtn" data-tab="tab-edit" type="button">Photo Edit / Redesign</button>
-          <button class="tabBtn" data-tab="tab-album" type="button">Album Cover</button>
-          <button class="tabBtn" data-tab="tab-product" type="button">Product / Mockup</button>
-        </div>
-
-        <!-- Guidance -->
-        <div id="guide" class="guide">
-          <h3 id="guideTitle">Scene / Promo — focus points</h3>
-          <ul id="guideFocus"></ul>
-          <ul id="guideAvoid"></ul>
-          <div id="guideExample" class="ex"></div>
-        </div>
-
-        <!-- TAB PANELS -->
-        <!-- 1) Scene / Promo -->
-        <div id="tab-promo" class="tabPanel">
-          <label>Goal</label>
-          <select id="goalPreset">
-            <option value="Promo / Poster" selected>Promo / Poster</option>
-            <option value="Product / E-commerce">Product / E-commerce</option>
-            <option value="YouTube Thumbnail">YouTube Thumbnail</option>
-            <option value="Editorial / Paparazzi">Editorial / Paparazzi</option>
-          </select>
-
-          <div class="row">
-            <div>
-              <label>Subject</label>
-              <input id="subject" placeholder="e.g., a creator holding a camera, a slime product, a musician" />
-            </div>
-            <div>
-              <label>Setting / Background</label>
-              <input id="setting" placeholder="e.g., city night street, seamless studio, backstage hallway" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 2) Logo -->
-        <div id="tab-logo" class="tabPanel hidden">
-          <div class="row">
-            <div>
-              <label>Brand name (required)</label>
-              <input id="logoBrand" placeholder="e.g., Pocket Cinema" />
-            </div>
-            <div>
-              <label>Tagline (optional)</label>
-              <input id="logoTagline" placeholder='e.g., "Ultimate Image Prompt’r"' />
-            </div>
-          </div>
-          <div class="row">
-            <div>
-              <label>Style direction</label>
-              <input id="logoStyle" placeholder="e.g., 3D neon ultraviolet LED strip, cinematic, clean" />
-            </div>
-            <div>
-              <label>Icon idea</label>
-              <input id="logoIcon" placeholder="e.g., play button + NH monogram intertwined" />
-            </div>
-          </div>
-        </div>
-
-        <!-- 3) Photo Enhance -->
-        <div id="tab-enhance" class="tabPanel hidden">
-          <label>Enhancement goal</label>
-          <input id="enhanceGoal" placeholder="e.g., sharpen details, natural skin texture, reduce noise, fix color" />
-
-          <div class="row">
-            <div>
-              <label>Keep the same size?</label>
-              <select id="enhanceSize">
-                <option value="same" selected>Same framing/size</option>
-                <option value="slightlyDifferent">Slightly different angle (still faithful)</option>
-              </select>
-            </div>
-            <div>
-              <label>Detail level</label>
-              <select id="enhanceDetail">
-                <option value="high" selected>Extra detail-focused</option>
-                <option value="balanced">Balanced</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4) Photo Edit / Redesign -->
-        <div id="tab-edit" class="tabPanel hidden">
-          <label>What should change? (required)</label>
-          <textarea id="editChange" placeholder="Describe what you want changed — keep it clear and specific."></textarea>
-
-          <label>What must stay the same?</label>
-          <textarea id="editKeep" placeholder="Identity, outfit, background, text, composition…"></textarea>
-
-          <div class="row">
-            <div>
-              <label>Angle/framing</label>
-              <select id="editAngle">
-                <option value="same" selected>Same framing/size</option>
-                <option value="slightlyDifferent">Slightly different angle</option>
-              </select>
-            </div>
-            <div>
-              <label>Edit strength</label>
-              <select id="editStrength">
-                <option value="light" selected>Light / conservative</option>
-                <option value="moderate">Moderate</option>
-                <option value="heavy">Heavy</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5) Album Cover -->
-        <div id="tab-album" class="tabPanel hidden">
-          <div class="row">
-            <div>
-              <label>Artist name (required)</label>
-              <input id="albumArtist" placeholder="Artist name" />
-            </div>
-            <div>
-              <label>Title (required)</label>
-              <input id="albumTitle" placeholder="Album / Single title" />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Genre / vibe</label>
-              <input id="albumVibe" placeholder="e.g., R&B, dark pop, cinematic" />
-            </div>
-            <div>
-              <label>Cover concept</label>
-              <input id="albumConcept" placeholder="e.g., moody portrait, neon glow, minimal typography" />
-            </div>
-          </div>
-
-          <div class="tiny">Album covers are locked to <strong>1:1</strong> in rewrite rules (we’ll enforce in Step B).</div>
-        </div>
-
-        <!-- 6) Product / Mockup -->
-        <div id="tab-product" class="tabPanel hidden">
-          <div class="row">
-            <div>
-              <label>Product type</label>
-              <input id="productType" placeholder="e.g., hoodie mockup, bottle label, poster print" />
-            </div>
-            <div>
-              <label>Brand / text to include</label>
-              <input id="productText" placeholder="e.g., brand name, slogan, required text" />
-            </div>
-          </div>
-
-          <label>Mockup setting</label>
-          <input id="productSetting" placeholder="e.g., studio seamless, lifestyle street, shelf retail" />
-        </div>
-
-        <!-- Optional fields -->
-        <div class="sectionHead">
-          <h3>Optional fields</h3>
-          <button class="secondary" id="toggleOptionalBtn" type="button">Hide</button>
-        </div>
-
-        <div id="optionalWrap" class="optionalWrap">
-          <div class="row">
-            <div>
-              <label>Vibe</label>
-              <select id="vibeSelect">
-                <option value="" selected>None (omit)</option>
-                <option value="Cinematic">Cinematic</option>
-                <option value="Futuristic Minimal">Futuristic Minimal</option>
-                <option value="Luxury / High-end">Luxury / High-end</option>
-                <option value="Gritty / Street">Gritty / Street</option>
-                <option value="Dreamy / Soft">Dreamy / Soft</option>
-                <option value="__custom__">Custom…</option>
-              </select>
-              <input id="vibeCustom" class="hidden" placeholder="Type your vibe…" />
-            </div>
-
-            <div>
-              <label>Lighting</label>
-              <select id="lightingSelect">
-                <option value="" selected>None (omit)</option>
-                <option value="Softbox studio, clean highlights">Softbox studio, clean highlights</option>
-                <option value="Flash-lit paparazzi, crisp speculars">Flash-lit paparazzi, crisp speculars</option>
-                <option value="Golden hour, warm rim light">Golden hour, warm rim light</option>
-                <option value="Neon accents, high contrast">Neon accents, high contrast</option>
-                <option value="Moody low-key, dramatic shadows">Moody low-key, dramatic shadows</option>
-                <option value="__custom__">Custom…</option>
-              </select>
-              <input id="lightingCustom" class="hidden" placeholder="Type your lighting…" />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Camera / Lens</label>
-              <select id="lensSelect">
-                <option value="" selected>None (omit)</option>
-                <option value="35mm documentary">35mm documentary</option>
-                <option value="50mm portrait">50mm portrait</option>
-                <option value="85mm compression">85mm compression</option>
-                <option value="24mm wide hero shot">24mm wide hero shot</option>
-                <option value="__custom__">Custom…</option>
-              </select>
-              <input id="lensCustom" class="hidden" placeholder="Type your camera/lens…" />
-            </div>
-
-            <div>
-              <label>Aspect Ratio</label>
-              <select id="arSelect">
-                <option value="" selected>None (omit)</option>
-                <option value="1:1">1:1</option>
-                <option value="4:5">4:5</option>
-                <option value="9:16">9:16</option>
-                <option value="16:9">16:9</option>
-                <option value="__custom__">Custom…</option>
-              </select>
-              <input id="arCustom" class="hidden" placeholder="Type your aspect ratio…" />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Quality</label>
-              <select id="qualitySelect">
-                <option value="" selected>None (omit)</option>
-                <option value="Ultra-detailed, realistic texture">Ultra-detailed, realistic texture</option>
-                <option value="Clean, polished, minimal grain">Clean, polished, minimal grain</option>
-                <option value="Film grain, editorial realism">Film grain, editorial realism</option>
-                <option value="__custom__">Custom…</option>
-              </select>
-              <input id="qualityCustom" class="hidden" placeholder="Type your quality instruction…" />
-            </div>
-
-            <div>
-              <label>Text overlay (optional)</label>
-              <input id="overlay" placeholder='e.g., "AI PHOTO PROMO" bottom-center, bold sans' />
-            </div>
-          </div>
-
-          <label>Key details (optional)</label>
-          <textarea id="details" placeholder="Logos, colors, clothing, props, composition, mood notes…"></textarea>
-        </div>
-
-        <!-- Reference images -->
-        <label style="margin-top:14px;">Reference Images (1–10)</label>
-        <input id="imgFiles" type="file" accept="image/*" multiple />
-        <div class="tiny">Upload up to 10 images. Label each image to make the prompt smarter (no server uploads).</div>
-        <div id="imgPreview" class="imgGrid"></div>
-
-        <!-- Buttons -->
-        <div class="btns">
-          <button id="gen" type="button">Generate</button>
-          <button class="secondary" id="shorten" type="button">Shorten</button>
-          <button class="secondary" id="copy" type="button">Copy</button>
-          <button class="secondary" id="clear" type="button">Clear</button>
-        </div>
-
-        <div class="tiny">
-          Tip: Use “a person” unless it’s you/your owned assets. Avoid naming real people you don’t have rights to.
-        </div>
+        <p class="note">“Crisp” is your default: Pass 1 grade + Pass 2 non-skin detail (no blotch).</p>
       </div>
 
-      <!-- RIGHT -->
-      <div class="card">
-        <h2>Output</h2>
-        <div id="output" class="out">Pick a tab, fill a few fields, then tap “Generate”.</div>
-        <div id="status" class="hint"></div>
-        <div class="hint"><span class="ok">✓</span> Client-side only. Images stay in your browser.</div>
+      <div class="divider"></div>
 
-        <div class="footer">
-          © 2025 Nathan Histed — Pocket Cinema. All rights reserved.
-          <br/>
-          This tool and its UI/prompt formats are proprietary to Nathan Histed.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Password Modal -->
-  <div id="pwBackdrop" class="modalBackdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
-    <div class="modal">
-      <div class="modalTop">
+      <div class="row">
         <div>
-          <h3 id="pwTitle">🔒 Password Required</h3>
-          <p>Enter the access password to run this action.</p>
+          <div class="section-title">Aspect Ratio</div>
+          <select id="aspect">
+            <option value="9:16" selected>9:16 (Portrait)</option>
+            <option value="16:9">16:9 (Landscape)</option>
+          </select>
         </div>
-        <button class="xBtn" id="pwClose" type="button">✕</button>
+
+        <div>
+          <div class="section-title">Mode</div>
+          <select id="mode">
+            <option value="pass1" selected>Pass 1 — Full Frame Grade</option>
+            <option value="pass2">Pass 2 — Detail Only (Non-skin)</option>
+            <option value="single">Single Pass — Grade + Detail (Fast)</option>
+            <option value="headshot">Headshot Crop — Controlled Crop</option>
+          </select>
+        </div>
+
+        <div style="flex:1">
+          <div class="section-title">Optional Notes (appended)</div>
+          <input id="notes" type="text" placeholder='e.g., keep hat fully visible; slightly stronger shadows' />
+        </div>
       </div>
 
-      <label>Password</label>
-      <input id="pwInput" type="password" placeholder="Enter password…" autocomplete="off" />
-      <div id="pwMsg" class="modalMsg tiny"></div>
-
-      <div class="modalActions">
-        <button class="secondary" id="pwCancel" type="button">Cancel</button>
-        <button id="pwSubmit" type="button">Continue</button>
+      <div class="section">
+        <div class="section-title"><span>Framing Rules</span><span class="badge ok" id="frameBadge">OK</span></div>
+        <div class="row">
+          <label><input type="checkbox" id="noCrop" checked> Full frame (no crop/zoom/reframe)</label>
+          <label><input type="checkbox" id="deepDOF" checked> Deep depth of field (even focus)</label>
+          <label><input type="checkbox" id="noRotate" checked> No rotation / no camera angle changes</label>
+        </div>
+        <p class="note">Headshot mode uses controlled crop rules and ignores “no crop.”</p>
       </div>
+
+      <div class="section">
+        <div class="section-title"><span>Locked Features (anti-drift)</span><span class="badge ok" id="lockBadge">OK</span></div>
+        <div class="row">
+          <label><input type="checkbox" id="lockIdentity" checked> Identity / facial structure locked</label>
+          <label><input type="checkbox" id="lockTeeth" checked> Teeth locked</label>
+          <label><input type="checkbox" id="lockEyes" checked> Eyes locked</label>
+          <label><input type="checkbox" id="lockBeard" checked> Beard shape locked</label>
+          <label><input type="checkbox" id="lockTattoos" checked> Tattoos locked</label>
+          <label><input type="checkbox" id="lockBody" checked> Body proportions/pose locked</label>
+          <label><input type="checkbox" id="lockSkinPixels"> Skin pixels locked (strong)</label>
+          <label><input type="checkbox" id="colorLock" checked> Skin tone + neutral WB locked</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>Focus Targets</span><span class="badge" id="focusBadge">Select what matters</span></div>
+        <div class="row">
+          <label><input type="checkbox" id="focusSmile"> Smile realism (NO teeth changes)</label>
+          <label><input type="checkbox" id="focusTeeth"> Teeth consistency (match source)</label>
+          <label><input type="checkbox" id="focusEyes" checked> Eyes “undull” (texture only)</label>
+          <label><input type="checkbox" id="focusTattoos" checked> Tattoos (edges sharper only)</label>
+          <label><input type="checkbox" id="focusMuscles"> Muscles/definition (lighting only, NO reshape)</label>
+          <label><input type="checkbox" id="focusDenim" checked> Denim texture</label>
+          <label><input type="checkbox" id="focusBeard" checked> Beard strands</label>
+          <label><input type="checkbox" id="focusHat" checked> Hat fabric</label>
+          <label><input type="checkbox" id="focusSkinEven"> Skin evenness (NO blotch, NO “clarity”)</label>
+          <label><input type="checkbox" id="focusBackground" checked> Pure white background</label>
+        </div>
+        <p class="note">Muscles = highest drift risk. This builder will auto-lock body + forbid reshaping when you enable it.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>Enhancement Style</span><span class="pill" id="stylePill">Balanced</span></div>
+        <div class="row">
+          <label><input type="radio" name="strength" value="subtle" id="strengthSubtle"> Subtle</label>
+          <label><input type="radio" name="strength" value="balanced" id="strengthBalanced" checked> Balanced</label>
+          <label><input type="radio" name="strength" value="strong" id="strengthStrong"> Strong</label>
+        </div>
+        <p class="note">“Strong” increases contrast/detail language (still respects locks).</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>Background & Shadow</span><span class="badge ok" id="bgBadge">OK</span></div>
+        <div class="row">
+          <label><input type="checkbox" id="whiteBG" checked> Pure white background (#FFFFFF)</label>
+          <label><input type="checkbox" id="noVignette" checked> No vignette/gradient/corner darkening</label>
+          <label><input type="checkbox" id="minShadow" checked> Shadow: extremely faint + ultra-soft</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>Warnings / Auto-Fixes Applied</span><span class="badge" id="warnBadge">—</span></div>
+        <div class="panel" id="warningsPanel">
+          <div class="note" id="warningsText">No warnings.</div>
+          <ul id="warningsList"></ul>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button class="primary" id="build">Build Prompt</button>
+        <button id="copy">Copy Current</button>
+        <button id="copyPass1">Copy Pass 1</button>
+        <button id="copyPass2">Copy Pass 2</button>
+        <button id="copyBoth">Copy Pass 1 + Pass 2</button>
+        <button id="clearSaved">Clear Saved</button>
+      </div>
+
+      <div class="btnbar">
+        <button class="small" id="fixEyes">Copy Fix: Eyes</button>
+        <button class="small" id="fixTeeth">Copy Fix: Teeth</button>
+        <button class="small" id="fixSkin">Copy Fix: Skin Tone</button>
+      </div>
+
+      <p class="note">
+        Stop rule: If Pass 1 already looks great, do not run Pass 2. Most “drift” comes from unnecessary extra passes.
+      </p>
     </div>
+
+    <!-- RIGHT: Output -->
+    <div class="card">
+      <h2>
+        <span>Generated Prompt</span>
+        <span class="pill" id="pill"></span>
+      </h2>
+      <textarea id="output" spellcheck="false"></textarea>
+      <p class="note" id="hint"></p>
+    </div>
+
   </div>
+</main>
+
+<div class="footerhint"><div class="toast" id="toast">Copied.</div></div>
 
 <script>
   const $ = (id) => document.getElementById(id);
+  const STORAGE_KEY = "cg_all_in_prompt_builder_v1";
 
-  /* ===== Password Gate (Generate + Shorten ONLY) ===== */
-  const ACCESS_PASSWORD = "PROMPT";
-  let pendingAction = null;
-
-  function openPasswordModal(actionFn){
-    pendingAction = actionFn;
-    $("pwMsg").textContent = "";
-    $("pwInput").value = "";
-    $("pwBackdrop").classList.remove("hidden");
-    setTimeout(() => $("pwInput").focus(), 60);
-  }
-  function closePasswordModal(){
-    pendingAction = null;
-    $("pwBackdrop").classList.add("hidden");
-  }
-  function submitPassword(){
-    const entered = ($("pwInput").value || "").trim();
-    if(entered !== ACCESS_PASSWORD){
-      $("pwMsg").innerHTML = `<span class="bad">Incorrect password.</span>`;
-      $("pwInput").value = "";
-      $("pwInput").focus();
-      return;
-    }
-    const fn = pendingAction;
-    closePasswordModal();
-    if(typeof fn === "function") fn();
-  }
-
-  $("pwSubmit").addEventListener("click", submitPassword);
-  $("pwCancel").addEventListener("click", closePasswordModal);
-  $("pwClose").addEventListener("click", closePasswordModal);
-  $("pwInput").addEventListener("keydown", (e) => {
-    if(e.key === "Enter") submitPassword();
-    if(e.key === "Escape") closePasswordModal();
-  });
-  $("pwBackdrop").addEventListener("click", (e) => {
-    if(e.target === $("pwBackdrop")) closePasswordModal();
-  });
-
-  function wordCount(text){
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  }
-
-  /* ===== Tabs + Guidance ===== */
-  const GUIDES = {
-    "tab-promo": {
-      title: "Scene / Promo — focus points",
-      focus: [
-        "Lead with subject + environment + intent",
-        "Use 2–4 constraints (lighting, lens, mood) — not 20",
-        "If using text: specify placement + font mood + legibility"
-      ],
-      avoid: [
-        "Avoid conflicting instructions (e.g., “soft dreamy” + “hard flash paparazzi”)",
-        "Avoid too many camera changes or angles in one image prompt",
-        "Avoid over-stacking negatives (it can cause weird artifacts)"
-      ],
-      example:
-`Promo poster of a creator holding a camera in a neon-lit city alley, cinematic mood, clean composition, crisp highlights, realistic texture, subtle grain, bold title bottom-center. Avoid warped text, extra fingers, low-res.`
-    },
-    "tab-logo": {
-      title: "Logo — focus points",
-      focus: [
-        "Keep shapes simple and readable at small sizes",
-        "Choose 1 main idea (monogram, icon, or wordmark) then support it",
-        "Define material/finish: neon tube, chrome, glass, flat vector, etc."
-      ],
-      avoid: [
-        "Avoid too many colors/materials at once",
-        "Avoid tiny micro-text in the logo mark",
-        "Avoid photoreal backgrounds — logos should be clean"
-      ],
-      example:
-`Logo wordmark: “Pocket Cinema” as the focal, with a subtle “Nathan Histed” secondary. 3D neon ultraviolet LED-tube style, clean dark background, play-button icon fused with an “NH” monogram. High readability, centered composition.`
-    },
-    "tab-enhance": {
-      title: "Photo Enhance — focus points",
-      focus: [
-        "Preserve identity + proportions",
-        "Improve texture clarity (not plastic smoothing)",
-        "Fix lighting/color realistically"
-      ],
-      avoid: [
-        "Avoid changing facial structure unless requested",
-        "Avoid over-sharpen halos and crunchy noise",
-        "Avoid inventing new details (jewelry, logos, text) unless requested"
-      ],
-      example:
-`Enhance the photo for realistic detail: restore clarity, natural skin texture, crisp edges, true-to-life color and lighting, subtle film grain, preserve identity and proportions. Avoid plastic skin, AI artifacts, warped text.`
-    },
-    "tab-edit": {
-      title: "Photo Edit / Redesign — focus points",
-      focus: [
-        "State exactly what changes and what must stay",
-        "Choose only: same framing OR slightly different angle",
-        "Keep edits consistent with lighting/shadows"
-      ],
-      avoid: [
-        "Avoid vague commands like “make it better” without specifics",
-        "Avoid changing multiple major elements at once (causes drift)",
-        "Avoid contradictory instructions"
-      ],
-      example:
-`Edit the image: change the background to a clean studio gradient and replace the outfit with a black leather jacket. Keep identity, pose, and facial features the same. Same framing. Match original lighting direction and shadows.`
-    },
-    "tab-album": {
-      title: "Album Cover — focus points",
-      focus: [
-        "Artist name + Title must be present and legible",
-        "Strong focal subject + clean typography hierarchy",
-        "Keep cover design consistent with genre mood"
-      ],
-      avoid: [
-        "Avoid cluttered scenes and too many elements",
-        "Avoid tiny type that won’t read at thumbnail size",
-        "Avoid multiple fonts fighting each other"
-      ],
-      example:
-`1:1 album cover. Artist: “NATHAN HISTED”. Title: “POCKET CINEMA”. Minimal dark cinematic portrait, neon ultraviolet rim light, clean negative space for typography, premium modern sans, high contrast legibility.`
-    },
-    "tab-product": {
-      title: "Product / Mockup — focus points",
-      focus: [
-        "Specify the product, material, and print method",
-        "Define placement (center chest, label front, box top)",
-        "Use clean lighting for realism and legibility"
-      ],
-      avoid: [
-        "Avoid warped logos and unreadable type",
-        "Avoid reflections that distort the brand mark",
-        "Avoid too many competing textures"
-      ],
-      example:
-`Photoreal hoodie mockup on a clean studio background. “Pocket Cinema” logo centered chest, crisp print edges, soft fabric texture, realistic folds, clean softbox lighting, high legibility, no warped text.`
-    }
-  };
-
-  function setGuide(tabId){
-    const g = GUIDES[tabId] || GUIDES["tab-promo"];
-    $("guideTitle").textContent = g.title;
-
-    $("guideFocus").innerHTML = `<li><strong>Focus on:</strong></li>` + g.focus.map(x=>`<li>${x}</li>`).join("");
-    $("guideAvoid").innerHTML = `<li><strong>Avoid:</strong></li>` + g.avoid.map(x=>`<li>${x}</li>`).join("");
-    $("guideExample").textContent = g.example;
-  }
-
-  function setActiveTab(tabId){
-    document.querySelectorAll(".tabBtn").forEach(btn=>{
-      btn.classList.toggle("active", btn.dataset.tab === tabId);
-    });
-    document.querySelectorAll(".tabPanel").forEach(p=>{
-      p.classList.toggle("hidden", p.id !== tabId);
-    });
-    setGuide(tabId);
-  }
-
-  document.querySelectorAll(".tabBtn").forEach(btn=>{
-    btn.addEventListener("click", ()=> setActiveTab(btn.dataset.tab));
-  });
-
-  setGuide("tab-promo");
-
-  /* ===== LM Arena UI ===== */
-  function syncLmArenaUI(){
-    const isLma = $("platform").value === "lmarena";
-    $("lmaWrap").classList.toggle("hidden", !isLma);
-
-    const direct = $("lmaMode").value === "direct";
-    $("lmaDirectOnly").classList.toggle("hidden", !(isLma && direct));
-
-    syncLmaModelModeUI();
-  }
-  $("platform").addEventListener("change", syncLmArenaUI);
-  $("lmaMode").addEventListener("change", syncLmArenaUI);
-
-  function syncLmaModelModeUI(){
-    const isLma = $("platform").value === "lmarena";
-    const direct = $("lmaMode").value === "direct";
-    const show = isLma && direct;
-
-    const mode = $("lmaModelMode") ? $("lmaModelMode").value : "none";
-    $("lmaPresetWrap").classList.toggle("hidden", !(show && mode === "preset"));
-    $("lmaCustomWrap").classList.toggle("hidden", !(show && mode === "custom"));
-  }
-  $("lmaModelMode").addEventListener("change", syncLmaModelModeUI);
-  syncLmArenaUI();
-
-  /* ===== Optional fields behavior ===== */
-  let optionalVisible = true;
-
-  function setOptionalVisible(isVisible){
-    optionalVisible = isVisible;
-    $("optionalWrap").classList.toggle("hidden", !isVisible);
-    $("toggleOptionalBtn").textContent = isVisible ? "Hide" : "Show";
-  }
-
-  $("toggleOptionalBtn").addEventListener("click", () => {
-    setOptionalVisible(!optionalVisible);
-  });
-
-  function syncOptionalVisibilityRules(){
-    const onlyFilled = $("onlyFilled").checked;
-    $("hideOptionalChip").classList.toggle("hidden", !onlyFilled);
-    if(!onlyFilled) return;
-
-    const hideOpt = $("hideOptional").checked;
-    setOptionalVisible(!hideOpt);
-  }
-  $("onlyFilled").addEventListener("change", syncOptionalVisibilityRules);
-  $("hideOptional").addEventListener("change", syncOptionalVisibilityRules);
-  syncOptionalVisibilityRules();
-
-  function bindCustomSelect(selectId, customId){
-    const sel = $(selectId);
-    const custom = $(customId);
-    function sync(){
-      const isCustom = sel.value === "__custom__";
-      custom.classList.toggle("hidden", !isCustom);
-      if(isCustom){
-        if($("onlyFilled").checked && $("hideOptional").checked && !optionalVisible){
-          setOptionalVisible(true);
-          $("hideOptional").checked = false;
-          syncOptionalVisibilityRules();
-        }
-        setTimeout(() => custom.focus(), 50);
-      }
-    }
-    sel.addEventListener("change", sync);
-    sync();
-  }
-  bindCustomSelect("vibeSelect","vibeCustom");
-  bindCustomSelect("lightingSelect","lightingCustom");
-  bindCustomSelect("lensSelect","lensCustom");
-  bindCustomSelect("arSelect","arCustom");
-  bindCustomSelect("qualitySelect","qualityCustom");
-
-  function selectValue(selectId, customId){
-    const sel = $(selectId).value;
-    if(sel === "") return "";
-    if(sel === "__custom__") return ($(customId).value || "").trim();
-    return sel.trim();
-  }
-
-  /* ===== Image pack ===== */
-  let imagePack = [];
-  function clampImages(files){ return Array.from(files || []).slice(0, 10); }
-
-  function roleOption(label, current){
-    const selected = (label === current) ? "selected" : "";
-    return `<option ${selected}>${label}</option>`;
-  }
-
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function renderImagePack(){
-    const wrap = $("imgPreview");
-    wrap.innerHTML = "";
-    imagePack.forEach((img, idx) => {
-      const el = document.createElement("div");
-      el.className = "imgCard";
-      el.innerHTML = `
-        <div class="imgTop">
-          <img class="thumb" src="${img.dataUrl}" alt="img${idx+1}" />
-          <div class="imgMeta">
-            <div class="imgName">Image ${idx+1}: ${escapeHtml(img.name)}</div>
-
-            <div class="miniLabel">Role</div>
-            <select class="miniInput" data-idx="${idx}" data-field="role">
-              ${roleOption("Primary subject/identity", img.role)}
-              ${roleOption("Wardrobe/texture", img.role)}
-              ${roleOption("Background/location", img.role)}
-              ${roleOption("Lighting/color grade", img.role)}
-              ${roleOption("Style reference", img.role)}
-              ${roleOption("Text/logo reference", img.role)}
-            </select>
-
-            <div class="miniLabel">Keep</div>
-            <input class="miniInput" data-idx="${idx}" data-field="keep" value="${escapeHtml(img.keep||"")}" placeholder="What must stay the same?" />
-
-            <div class="miniLabel">Change</div>
-            <input class="miniInput" data-idx="${idx}" data-field="change" value="${escapeHtml(img.change||"")}" placeholder="What should be different?" />
-          </div>
-        </div>
-      `;
-      wrap.appendChild(el);
-    });
-
-    wrap.querySelectorAll("select, input").forEach(node => {
-      node.addEventListener("input", () => {
-        const i = Number(node.getAttribute("data-idx"));
-        const field = node.getAttribute("data-field");
-        imagePack[i][field] = node.value;
-      });
-    });
-  }
-
-  $("imgFiles").addEventListener("change", async (e) => {
-    const files = clampImages(e.target.files);
-    imagePack = [];
-    for(const f of files){
-      const dataUrl = await new Promise((res) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.readAsDataURL(f);
-      });
-      imagePack.push({ name: f.name || "image", dataUrl, role: "Primary subject/identity", keep: "", change: "" });
-    }
-    renderImagePack();
-  });
-
-  function buildImageInstructions(platform){
-    if(!imagePack.length) return "";
-    const lines = imagePack.map((img, i) => {
-      const keep = img.keep ? ` Keep: ${img.keep}.` : "";
-      const change = img.change ? ` Change: ${img.change}.` : "";
-      return `Image ${i+1} — Role: ${img.role}.${keep}${change}`.trim();
-    });
-
-    const head =
-      platform === "capcut" ? "Reference Images (CapCut workflow):" :
-      platform === "sora2"  ? "Reference Images (Sora 2):" :
-      platform === "lmarena"? "Reference Images (LM Arena):" :
-      platform === "gemini" ? "Reference Images (Gemini):" :
-      platform === "grok"   ? "Reference Images (Grok):" :
-      platform === "meta"   ? "Reference Images (Meta AI):" :
-                              "Reference Images:";
-
-    return [head, ...lines].join("\n");
-  }
-
-  /* ===== Prompt building (still “structured assembly” for Step A) ===== */
-  function baseData(){
-    const platform = $("platform").value;
-    const verbose = $("verbose").checked;
-    const strict120 = $("strict120").checked;
-
-    const vibe = selectValue("vibeSelect","vibeCustom");
-    const lighting = selectValue("lightingSelect","lightingCustom");
-    const lens = selectValue("lensSelect","lensCustom");
-    const ar = selectValue("arSelect","arCustom");
-    const quality = selectValue("qualitySelect","qualityCustom");
-
-    const details = ($("details").value || "").trim();
-    const overlay = ($("overlay").value || "").trim();
-
-    const negatives = "Avoid: extra fingers, warped text, unnatural eyes, heavy blur, low-res artifacts.";
-
-    return { platform, verbose, strict120, vibe, lighting, lens, ar, quality, details, overlay, negatives };
-  }
-
-  function activeTabId(){
-    const btn = document.querySelector(".tabBtn.active");
-    return btn ? btn.dataset.tab : "tab-promo";
-  }
-
-  function getTabPayload(tabId){
-    if(tabId === "tab-logo"){
-      return {
-        goalLabel: "Logo",
-        requiredOk: ($("logoBrand").value || "").trim().length > 0,
-        lines: [
-          `Brand: ${($("logoBrand").value||"").trim() || "(required)"}`,
-          $("logoTagline").value ? `Tagline: ${$("logoTagline").value.trim()}` : "",
-          $("logoStyle").value ? `Style: ${$("logoStyle").value.trim()}` : "",
-          $("logoIcon").value ? `Icon: ${$("logoIcon").value.trim()}` : ""
-        ].filter(Boolean)
-      };
-    }
-
-    if(tabId === "tab-enhance"){
-      return {
-        goalLabel: "Photo Enhance",
-        requiredOk: ($("enhanceGoal").value || "").trim().length > 0,
-        lines: [
-          `Enhance goal: ${($("enhanceGoal").value||"").trim() || "(required)"}`,
-          `Framing: ${$("enhanceSize").value === "same" ? "Same framing/size" : "Slightly different angle (faithful)"}`,
-          `Detail: ${$("enhanceDetail").value === "high" ? "Extra detail-focused" : "Balanced"}`
-        ]
-      };
-    }
-
-    if(tabId === "tab-edit"){
-      return {
-        goalLabel: "Photo Edit / Redesign",
-        requiredOk: ($("editChange").value || "").trim().length > 0,
-        lines: [
-          `Change: ${($("editChange").value||"").trim() || "(required)"}`,
-          $("editKeep").value ? `Keep: ${$("editKeep").value.trim()}` : "",
-          `Angle: ${$("editAngle").value === "same" ? "Same framing/size" : "Slightly different angle"}`,
-          `Strength: ${$("editStrength").value}`
-        ].filter(Boolean)
-      };
-    }
-
-    if(tabId === "tab-album"){
-      const artist = ($("albumArtist").value||"").trim();
-      const title  = ($("albumTitle").value||"").trim();
-      return {
-        goalLabel: "Album Cover",
-        requiredOk: artist.length > 0 && title.length > 0,
-        lines: [
-          `Artist: ${artist || "(required)"}`,
-          `Title: ${title || "(required)"}`,
-          $("albumVibe").value ? `Vibe: ${$("albumVibe").value.trim()}` : "",
-          $("albumConcept").value ? `Concept: ${$("albumConcept").value.trim()}` : "",
-          `Aspect Ratio: 1:1 (locked for album covers)`
-        ].filter(Boolean)
-      };
-    }
-
-    if(tabId === "tab-product"){
-      return {
-        goalLabel: "Product / Mockup",
-        requiredOk: ($("productType").value || "").trim().length > 0,
-        lines: [
-          `Product: ${($("productType").value||"").trim() || "(required)"}`,
-          $("productText").value ? `Text: ${$("productText").value.trim()}` : "",
-          $("productSetting").value ? `Setting: ${$("productSetting").value.trim()}` : ""
-        ].filter(Boolean)
-      };
-    }
-
-    // Promo default
+  function defaults(){
     return {
-      goalLabel: $("goalPreset").value || "Scene / Promo",
-      requiredOk: true,
-      lines: [
-        `Goal: ${$("goalPreset").value}`,
-        `Subject: ${($("subject").value||"").trim() || "a subject"}`,
-        `Setting: ${($("setting").value||"").trim() || "a fitting environment"}`
-      ]
+      aspect:"9:16",
+      mode:"pass1",
+      noCrop:true,
+      deepDOF:true,
+      noRotate:true,
+
+      lockIdentity:true,
+      lockTeeth:true,
+      lockEyes:true,
+      lockBeard:true,
+      lockTattoos:true,
+      lockBody:true,
+      lockSkinPixels:false,
+      colorLock:true,
+
+      focusSmile:false,
+      focusTeeth:false,
+      focusEyes:true,
+      focusTattoos:true,
+      focusMuscles:false,
+      focusDenim:true,
+      focusBeard:true,
+      focusHat:true,
+      focusSkinEven:false,
+      focusBackground:true,
+
+      strength:"balanced",
+
+      whiteBG:true,
+      noVignette:true,
+      minShadow:true,
+
+      notes:""
     };
   }
 
-  function lmArenaHeader(){
-    const mode = $("lmaMode").value;
-    if(mode === "battle") return "LM ARENA (Battle / unknown model)";
+  function readState(){
+    const strength = document.querySelector('input[name="strength"]:checked')?.value || "balanced";
+    return {
+      aspect:$("aspect").value,
+      mode:$("mode").value,
+      noCrop:$("noCrop").checked,
+      deepDOF:$("deepDOF").checked,
+      noRotate:$("noRotate").checked,
 
-    const modelMode = $("lmaModelMode").value;
-    if(modelMode === "none") return "LM Arena Direct";
+      lockIdentity:$("lockIdentity").checked,
+      lockTeeth:$("lockTeeth").checked,
+      lockEyes:$("lockEyes").checked,
+      lockBeard:$("lockBeard").checked,
+      lockTattoos:$("lockTattoos").checked,
+      lockBody:$("lockBody").checked,
+      lockSkinPixels:$("lockSkinPixels").checked,
+      colorLock:$("colorLock").checked,
 
-    if(modelMode === "custom"){
-      const manual = ($("lmaManual").value || "").trim();
-      return manual ? `LM Arena Direct — Model: ${manual}` : "LM Arena Direct";
-    }
+      focusSmile:$("focusSmile").checked,
+      focusTeeth:$("focusTeeth").checked,
+      focusEyes:$("focusEyes").checked,
+      focusTattoos:$("focusTattoos").checked,
+      focusMuscles:$("focusMuscles").checked,
+      focusDenim:$("focusDenim").checked,
+      focusBeard:$("focusBeard").checked,
+      focusHat:$("focusHat").checked,
+      focusSkinEven:$("focusSkinEven").checked,
+      focusBackground:$("focusBackground").checked,
 
-    const picked = ($("lmaModelPick").value || "").trim();
-    return picked ? `LM Arena Direct — Model: ${picked}` : "LM Arena Direct";
+      strength,
+
+      whiteBG:$("whiteBG").checked,
+      noVignette:$("noVignette").checked,
+      minShadow:$("minShadow").checked,
+
+      notes:$("notes").value.trim()
+    };
   }
 
-  function formatOutput(){
-    const d = baseData();
-    const tabId = activeTabId();
-    const payload = getTabPayload(tabId);
+  function applyState(s){
+    $("aspect").value = s.aspect ?? "9:16";
+    $("mode").value = s.mode ?? "pass1";
+    $("noCrop").checked = !!s.noCrop;
+    $("deepDOF").checked = !!s.deepDOF;
+    $("noRotate").checked = !!s.noRotate;
 
-    if(!payload.requiredOk){
-      return `⚠ Missing required fields for: ${payload.goalLabel}\nFill the required field(s) and try again.`;
-    }
+    $("lockIdentity").checked = !!s.lockIdentity;
+    $("lockTeeth").checked = !!s.lockTeeth;
+    $("lockEyes").checked = !!s.lockEyes;
+    $("lockBeard").checked = !!s.lockBeard;
+    $("lockTattoos").checked = !!s.lockTattoos;
+    $("lockBody").checked = !!s.lockBody;
+    $("lockSkinPixels").checked = !!s.lockSkinPixels;
+    $("colorLock").checked = !!s.colorLock;
 
-    const imgBlock = buildImageInstructions(d.platform);
+    $("focusSmile").checked = !!s.focusSmile;
+    $("focusTeeth").checked = !!s.focusTeeth;
+    $("focusEyes").checked = !!s.focusEyes;
+    $("focusTattoos").checked = !!s.focusTattoos;
+    $("focusMuscles").checked = !!s.focusMuscles;
+    $("focusDenim").checked = !!s.focusDenim;
+    $("focusBeard").checked = !!s.focusBeard;
+    $("focusHat").checked = !!s.focusHat;
+    $("focusSkinEven").checked = !!s.focusSkinEven;
+    $("focusBackground").checked = !!s.focusBackground;
 
-    const lines = [];
-    lines.push("Pocket Cinema — Prompt Generator (© Nathan Histed).");
-    lines.push(`Task: ${payload.goalLabel}.`);
-    payload.lines.forEach(x => lines.push(x));
+    $("strengthSubtle").checked = (s.strength === "subtle");
+    $("strengthBalanced").checked = (s.strength === "balanced");
+    $("strengthStrong").checked = (s.strength === "strong");
 
-    function maybe(label, value){
-      if(!value) return;
-      lines.push(`${label}: ${value}.`);
-    }
-    maybe("Style", d.vibe);
-    maybe("Lighting", d.lighting);
-    if(d.lens){
-      lines.push(d.verbose ? `Camera: ${d.lens}, sharp focus, clean composition.` : `Camera: ${d.lens}.`);
-    }
-    maybe("Quality", d.quality);
+    $("whiteBG").checked = !!s.whiteBG;
+    $("noVignette").checked = !!s.noVignette;
+    $("minShadow").checked = !!s.minShadow;
 
-    // Tab rules (lightweight in Step A)
-    if(tabId === "tab-album"){
-      lines.push("Aspect ratio: 1:1.");
-    } else {
-      maybe("Aspect ratio", d.ar);
-    }
-
-    if(d.details) lines.push(`Must include: ${d.details}.`);
-    if(d.overlay) lines.push(`Text overlay: ${d.overlay}.`);
-
-    const oneLine = [
-      payload.goalLabel,
-      payload.lines.join("; "),
-      d.vibe || "",
-      d.lighting || "",
-      d.lens || "",
-      (tabId === "tab-album" ? "AR 1:1" : (d.ar ? `AR ${d.ar}` : "")),
-      d.quality || "",
-      d.details ? `Must include: ${d.details}` : "",
-      d.overlay ? `Text overlay: ${d.overlay}` : "",
-      d.negatives
-    ].filter(Boolean).join(". ");
-
-    if(d.platform === "sora2"){
-      return ["SORA 2 (single prompt block)", imgBlock || null, oneLine].filter(Boolean).join("\n\n");
-    }
-    if(d.platform === "capcut"){
-      const caption = d.overlay || "POCKET CINEMA";
-      const onScreen = d.overlay || "Pocket Cinema";
-      return [
-        "CAPCUT (paste-ready blocks)",
-        `Caption:\n${caption}`,
-        `On-screen text:\n${onScreen}`,
-        imgBlock || null,
-        `Scene prompt:\n${oneLine}`,
-        "Hashtags (optional):\n#PocketCinema #AIPrompts #Cinematic #CreatorTools"
-      ].filter(Boolean).join("\n\n");
-    }
-    if(d.platform === "lmarena"){
-      return [lmArenaHeader(), imgBlock || null, lines.join("\n"), `Negative prompt: ${d.negatives}`]
-        .filter(Boolean).join("\n\n");
-    }
-    if(d.platform === "gemini"){
-      return ["GEMINI (nano-banana)", imgBlock || null, `Prompt:\n${lines.join(" ")}`, `Constraints:\n- ${d.negatives.replace("Avoid: ","")}`]
-        .filter(Boolean).join("\n\n");
-    }
-    if(d.platform === "meta"){
-      return ["META AI", imgBlock || null, lines.join(" "), d.negatives].filter(Boolean).join("\n\n");
-    }
-    if(d.platform === "grok"){
-      return ["GROK", imgBlock || null, `Prompt:\n${lines.join(" ")}`, d.negatives].filter(Boolean).join("\n\n");
-    }
-    return ["CHATGPT", imgBlock || null, lines.join("\n"), `Negative prompt: ${d.negatives}`].filter(Boolean).join("\n\n");
+    $("notes").value = s.notes ?? "";
   }
 
-  function enforce120(text){
-    const wc = wordCount(text);
-    if(wc <= 120) return text;
-
-    let imgMini = "";
-    if(imagePack.length){
-      imgMini = "Images: " + imagePack.map((img, i) => `#${i+1}=${img.role}`).join(", ") + ".";
+  function saveState(s){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      $("statusPill").textContent = "Saved";
+    }catch{
+      $("statusPill").textContent = "Not Saved";
     }
-    // Keep it simple for now (Step B will do smarter rewrite)
-    return `${imgMini}\n${text.split("\n").slice(-1)[0]}`.trim();
   }
 
-  function render(text){
-    $("output").textContent = text;
-    const wc = wordCount(text);
-    let status = `Word count: <strong>${wc}</strong>`;
-    if($("strict120").checked){
-      status += wc <= 120 ? ` — <span class="ok">within 120</span>` : ` — <span class="warn">over 120 (tap Shorten)</span>`;
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch{ return null; }
+  }
+
+  function clearSaved(){
+    try{
+      localStorage.removeItem(STORAGE_KEY);
+      $("statusPill").textContent = "Cleared";
+    }catch{
+      $("statusPill").textContent = "Error";
     }
-    $("status").innerHTML = status;
   }
 
-  function doGenerate(){
-    let out = formatOutput();
-    if($("strict120").checked) out = enforce120(out);
-    render(out);
+  function showToast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>t.style.display="none", 1200);
   }
 
-  function doShorten(){
-    const out = enforce120(formatOutput());
-    render(out);
-    $("status").innerHTML += ` — <span class="ok">shortened</span>`;
-  }
-
-  async function doCopy(){
-    const text = $("output").textContent;
+  async function copyText(text){
     try{
       await navigator.clipboard.writeText(text);
-      $("status").innerHTML = `<span class="ok">✓</span> Copied to clipboard.`;
-    }catch(e){
-      $("status").innerHTML = `<span class="warn">⚠</span> Copy failed. Press and hold the output text to copy manually.`;
+      showToast("Copied.");
+    }catch{
+      $("output").focus(); $("output").select();
+      document.execCommand("copy");
+      showToast("Copied (fallback).");
     }
   }
 
-  function doClear(){
-    $("platform").value = "gemini";
-    $("goalPreset").value = "Promo / Poster";
+  function setBadges(s, warnings){
+    // Pills
+    const map = { pass1:"Pass 1", pass2:"Pass 2", single:"Single", headshot:"Headshot" };
+    $("pill").textContent = `${map[s.mode]} • ${s.aspect}`;
+    $("stylePill").textContent = s.strength[0].toUpperCase() + s.strength.slice(1);
 
-    // Promo
-    $("subject").value = "";
-    $("setting").value = "";
-
-    // Logo
-    $("logoBrand").value = "";
-    $("logoTagline").value = "";
-    $("logoStyle").value = "";
-    $("logoIcon").value = "";
-
-    // Enhance
-    $("enhanceGoal").value = "";
-    $("enhanceSize").value = "same";
-    $("enhanceDetail").value = "high";
-
-    // Edit
-    $("editChange").value = "";
-    $("editKeep").value = "";
-    $("editAngle").value = "same";
-    $("editStrength").value = "light";
-
-    // Album
-    $("albumArtist").value = "";
-    $("albumTitle").value = "";
-    $("albumVibe").value = "";
-    $("albumConcept").value = "";
-
-    // Product
-    $("productType").value = "";
-    $("productText").value = "";
-    $("productSetting").value = "";
-
-    // toggles
-    $("onlyFilled").checked = false;
-    $("hideOptional").checked = true;
-    $("hideOptionalChip").classList.add("hidden");
-    $("strict120").checked = false;
-    $("verbose").checked = true;
-
-    // Optional fields
-    $("vibeSelect").value = ""; $("vibeCustom").value = ""; $("vibeCustom").classList.add("hidden");
-    $("lightingSelect").value = ""; $("lightingCustom").value = ""; $("lightingCustom").classList.add("hidden");
-    $("lensSelect").value = ""; $("lensCustom").value = ""; $("lensCustom").classList.add("hidden");
-    $("arSelect").value = ""; $("arCustom").value = ""; $("arCustom").classList.add("hidden");
-    $("qualitySelect").value = ""; $("qualityCustom").value = ""; $("qualityCustom").classList.add("hidden");
-    $("overlay").value = "";
-    $("details").value = "";
-
-    // LM Arena
-    $("lmaMode").value = "battle";
-    $("lmaModelMode").value = "none";
-    $("lmaModelPick").value = "";
-    $("lmaManual").value = "";
-    syncLmArenaUI();
-
-    // optional visibility reset
-    setOptionalVisible(true);
-    syncOptionalVisibilityRules();
-
-    // images reset
-    $("imgFiles").value = "";
-    imagePack = [];
-    renderImagePack();
-
-    // reset tab
-    setActiveTab("tab-promo");
-
-    $("output").textContent = "Pick a tab, fill a few fields, then tap “Generate”.";
-    $("status").textContent = "";
+    // Badge statuses
+    $("frameBadge").className = "badge ok";
+    $("lockBadge").className = "badge ok";
+    $("bgBadge").className = "badge ok";
+    $("warnBadge").className = warnings.length ? "badge warn" : "badge ok";
+    $("warnBadge").textContent = warnings.length ? `${warnings.length} note(s)` : "OK";
   }
 
-  // Buttons
-  $("gen").addEventListener("click", () => openPasswordModal(doGenerate));   // password
-  $("shorten").addEventListener("click", () => openPasswordModal(doShorten)); // password
-  $("copy").addEventListener("click", doCopy); // no password
-  $("clear").addEventListener("click", doClear); // no password
+  function warningsUI(warnings){
+    const list = $("warningsList");
+    list.innerHTML = "";
+    if(!warnings.length){
+      $("warningsText").textContent = "No warnings. Guardrails look good.";
+      return;
+    }
+    $("warningsText").textContent = "Applied safety locks / notes:";
+    warnings.forEach(w=>{
+      const li = document.createElement("li");
+      li.textContent = w;
+      list.appendChild(li);
+    });
+  }
+
+  function strengthText(strength){
+    if(strength === "subtle") return {
+      grade: "subtle cinematic studio grade with controlled contrast (avoid heavy drama)",
+      contrast: "subtle",
+      detail: "subtle",
+    };
+    if(strength === "strong") return {
+      grade: "strong cinematic studio grade with pronounced but controlled contrast",
+      contrast: "strong",
+      detail: "strong",
+    };
+    return {
+      grade: "cinematic studio grade with high-contrast but controlled highlights",
+      contrast: "balanced",
+      detail: "balanced",
+    };
+  }
+
+  function buildPrompt(s){
+    const lines = [];
+    const warns = [];
+
+    const isPass2 = s.mode === "pass2";
+    const isHeadshot = s.mode === "headshot";
+    const isSingle = s.mode === "single";
+
+    // Auto-guardrails based on focus targets
+    // Muscles = force lockBody + forbid reshape + lighting-only definition
+    if(s.focusMuscles && !s.lockBody){
+      $("lockBody").checked = true;
+      s.lockBody = true;
+      warns.push("Enabled Body Lock because Muscles focus was selected.");
+    }
+    if(s.focusSmile && !s.lockTeeth){
+      $("lockTeeth").checked = true;
+      s.lockTeeth = true;
+      warns.push("Enabled Teeth Lock because Smile focus was selected (prevents dental drift).");
+    }
+    if(s.focusTeeth && !s.lockTeeth){
+      $("lockTeeth").checked = true;
+      s.lockTeeth = true;
+      warns.push("Enabled Teeth Lock because Teeth consistency focus was selected.");
+    }
+    if(s.focusEyes && !s.lockEyes){
+      $("lockEyes").checked = true;
+      s.lockEyes = true;
+      warns.push("Enabled Eyes Lock because Eyes focus was selected.");
+    }
+    if(s.focusSkinEven){
+      // If user wants skin evenness, we do NOT want clarity on skin, and we want neutral tone lock
+      if(!s.colorLock){
+        $("colorLock").checked = true;
+        s.colorLock = true;
+        warns.push("Enabled Color Lock because Skin evenness focus was selected.");
+      }
+      // In Pass 2, we always lock skin pixels. In Pass 1, we can keep skin editable but forbid clarity.
+      // Do not force skin pixel lock in Pass 1, but we will add explicit anti-clarity.
+    }
+
+    // Pass 2 auto skin lock for anti-blotch
+    if(isPass2 && !s.lockSkinPixels){
+      $("lockSkinPixels").checked = true;
+      s.lockSkinPixels = true;
+      warns.push("Enabled Skin Pixels Lock for Pass 2 to prevent blotchiness.");
+    }
+
+    // 1) Hard constraints first
+    if(isPass2){
+      lines.push(`REFINE THE PROVIDED IMAGE WITHOUT ANY FRAMING CHANGES. Preserve the ORIGINAL ${s.aspect} aspect ratio and ORIGINAL FRAMING exactly.`);
+    }else{
+      lines.push(`EDIT THE PROVIDED IMAGE. Preserve the ORIGINAL ${s.aspect} aspect ratio and ORIGINAL FRAMING exactly.`);
+    }
+
+    if(isHeadshot){
+      lines.push("");
+      lines.push("FRAMING (CROP INTENT): Create a HEADSHOT crop from the existing image. Crop in (do not extend canvas) to a head-and-shoulders composition. Keep the entire hat visible (do not cut off brim/crown). Keep full chin/jawline. Crop ends around upper chest/collarbone. CROP ANCHOR: keep eyes near the upper-third with 5–10% headroom. Do not rotate head or change camera angle.");
+    }else{
+      const fr = [];
+      if(s.noCrop) fr.push("Do not crop, zoom, rotate, extend canvas, or recompose.");
+      else fr.push("Do not extend canvas or recompose.");
+      if(s.noRotate) fr.push("Do not rotate or change camera angle.");
+      if(fr.length) lines.push(fr.join(" "));
+    }
+
+    // 2) Locked features
+    const locks = [];
+    if(s.lockIdentity) locks.push("- Preserve identity exactly: no changes to facial structure, eyes, nose, lips, jawline, or expression.");
+    if(s.lockBeard) locks.push("- Beard shape locked: do not change beard outline/shape.");
+    if(s.lockBody) locks.push("- No body reshaping: keep proportions, pose, clothing, and muscle definition unchanged.");
+    if(s.lockTattoos) locks.push("- Tattoos locked: do not alter design or placement (edges may be sharpened if requested).");
+    if(s.lockTeeth) locks.push("- Teeth locked: no whitening/straightening/reshaping/smoothing; keep shape/spacing/edges unchanged.");
+
+    if(s.lockEyes){
+      locks.push("- Eyes locked: match original eye color exactly (no hue/saturation/brightness change, no pupil change). Do not brighten/whiten sclera.");
+      if(s.focusEyes){
+        locks.push("- Eye enhancement allowed ONLY as iris texture/catchlight clarity within existing tones.");
+      }
+    }
+
+    if(locks.length){
+      lines.push("");
+      lines.push("LOCKED FEATURES (CRITICAL):");
+      lines.push(...locks);
+    }
+
+    // 3) Color lock (neutral on white)
+    if(s.colorLock){
+      lines.push("");
+      lines.push("COLOR + EXPOSURE LOCK (CRITICAL): Match skin tone to the ORIGINAL source image exactly. Keep white balance neutral (no warming/cooling). Do not brighten/darken skin and do not lift midtones on skin. Keep skin hue/saturation unchanged. Do not alter skin tone/exposure to fit the white background.");
+    }
+
+    // 4) Skin lock / skin evenness instructions
+    if(s.lockSkinPixels){
+      lines.push("");
+      lines.push("SKIN PIXELS LOCK (CRITICAL): Do not modify skin pixels at all (no clarity, no pores, no redness, no speckling, no micro-contrast).");
+    }else if(s.focusSkinEven){
+      lines.push("");
+      lines.push("SKIN RULE: Reduce uneven redness/blotchiness subtly while preserving natural pores and realism. Do NOT add clarity/micro-contrast to skin and do NOT introduce new freckles/speckling.");
+    }
+
+    // 5) Look + detail
+    const st = strengthText(s.strength);
+
+    if(isPass2){
+      lines.push("");
+      lines.push("DETAIL-ONLY PASS: Do not change global exposure/contrast/white balance. Add micro-detail ONLY to specified non-skin materials. Avoid halos/oversharpening.");
+      const targets = [];
+      if(s.focusDenim) targets.push("denim weave/seams/rips");
+      if(s.focusTattoos) targets.push("tattoo edges only (no redesign)");
+      if(s.focusHat) targets.push("hat fabric texture");
+      if(s.focusBeard) targets.push("beard strands (no outline change)");
+      if(targets.length) lines.push("DETAIL TARGETS (NON-SKIN ONLY): " + targets.join(", ") + ".");
+    } else if(isSingle){
+      lines.push("");
+      lines.push(`LOOK: Apply a ${st.grade} across the ENTIRE frame (not face-only): clean deep shadows, controlled highlights, realistic dynamic range, natural texture without smoothing.`);
+      if(s.deepDOF) lines.push("FOCUS: Deep depth of field (even sharpness across the subject; no shallow DoF).");
+      const targets = [];
+      if(s.focusDenim) targets.push("denim weave/seams/rips");
+      if(s.focusTattoos) targets.push("tattoo edges only (no redesign)");
+      if(s.focusHat) targets.push("hat fabric texture");
+      if(s.focusBeard) targets.push("beard strands (no outline change)");
+      if(targets.length) lines.push("DETAIL (NON-SKIN ONLY): Increase crisp detail only on " + targets.join(", ") + ". Do not add clarity/texture to skin.");
+    } else {
+      lines.push("");
+      lines.push(`LOOK: Apply a ${st.grade} to the ENTIRE frame (not face-only): clean deep shadows, crisp controlled highlights, realistic dynamic range, natural texture without smoothing.`);
+      if(s.deepDOF) lines.push("FOCUS: Deep depth of field (even focus across the whole subject; no shallow DoF).");
+    }
+
+    // Focus targets: Smile/Teeth/Muscles (handled carefully)
+    const focusLines = [];
+    if(s.focusSmile){
+      focusLines.push("SMILE: Maintain the same smile and mouth geometry; improve realism without changing teeth or lip shape.");
+    }
+    if(s.focusTeeth){
+      focusLines.push("TEETH: Match teeth to the ORIGINAL source exactly (shape, spacing, edges, and color). No whitening/straightening.");
+    }
+    if(s.focusMuscles){
+      focusLines.push("MUSCLES/DEFINITION: Enhance perceived definition ONLY via lighting/shadow and micro-contrast on clothing/fabric edges—NO anatomical reshaping, NO added muscles, NO changing body size.");
+    }
+    if(focusLines.length){
+      lines.push("");
+      lines.push("FOCUS TARGETS:");
+      focusLines.forEach(l=>lines.push(l));
+    }
+
+    // 6) Background + shadow
+    if(s.focusBackground || s.whiteBG || s.noVignette){
+      lines.push("");
+      const bgParts = [];
+      if(s.whiteBG) bgParts.push("BACKGROUND: Pure uniform white (#FFFFFF) edge-to-edge.");
+      if(s.noVignette) bgParts.push("NO vignette, NO gradient, NO corner darkening, NO spotlight falloff.");
+      lines.push(bgParts.join(" "));
+    }
+    if(s.minShadow){
+      lines.push("SHADOW: Remove nearly all cast shadow; allow only a faint, ultra-soft grounding shadow (barely visible).");
+    }
+
+    // 7) Negatives
+    lines.push("");
+    lines.push("NEGATIVE: no beauty retouching, no stylization, no face-only sharpening, no plastic smoothing, no added muscles, no feature changes.");
+
+    // Notes
+    if(s.notes){
+      lines.push("");
+      lines.push("NOTES: " + s.notes);
+    }
+
+    // UI warnings
+    if(s.focusMuscles){
+      warns.push("Muscles focus is lighting-only. If the model still reshapes, use selection/brush and target clothing edges only.");
+    }
+    if(s.focusSkinEven && s.lockSkinPixels){
+      warns.push("Skin evenness is limited because Skin Pixels Lock is ON. Turn Skin Pixels Lock OFF for a gentle skin-evenness pass (higher drift risk).");
+    }
+    if(isHeadshot){
+      warns.push("Headshot mode uses controlled crop. If hat gets clipped, add note: 'keep entire hat visible'.");
+    }
+
+    // Hints
+    const hint = $("hint");
+    if(isPass2) hint.textContent = "Pass 2 is a detail-only pass. It intentionally avoids skin edits to prevent blotchiness.";
+    else if(isSingle) hint.textContent = "Single-pass is faster but can drift more than the 2-pass pipeline.";
+    else hint.textContent = "";
+
+    return { prompt: lines.join("\n"), warnings: warns };
+  }
+
+  function build(){
+    const s = readState();
+
+    // Headshot ignores noCrop
+    if(s.mode === "headshot"){
+      $("noCrop").checked = false;
+      s.noCrop = false;
+    }
+
+    const result = buildPrompt(s);
+    $("output").value = result.prompt;
+
+    const map = { pass1:"Pass 1", pass2:"Pass 2", single:"Single", headshot:"Headshot" };
+    $("pill").textContent = `${map[s.mode]} • ${s.aspect}`;
+    setBadges(s, result.warnings);
+    warningsUI(result.warnings);
+
+    // Focus badge
+    const anyFocus = s.focusSmile||s.focusTeeth||s.focusEyes||s.focusTattoos||s.focusMuscles||s.focusDenim||s.focusBeard||s.focusHat||s.focusSkinEven||s.focusBackground;
+    $("focusBadge").textContent = anyFocus ? "Active" : "Select what matters";
+    $("focusBadge").className = anyFocus ? "badge ok" : "badge";
+
+    saveState(s);
+  }
+
+  function setBadges(s, warnings){
+    $("frameBadge").className = "badge ok";
+    $("lockBadge").className = "badge ok";
+    $("bgBadge").className = "badge ok";
+    $("warnBadge").className = warnings.length ? "badge warn" : "badge ok";
+    $("warnBadge").textContent = warnings.length ? `${warnings.length} note(s)` : "OK";
+  }
+
+  function warningsUI(warnings){
+    const list = $("warningsList");
+    list.innerHTML = "";
+    if(!warnings.length){
+      $("warningsText").textContent = "No warnings. Guardrails look good.";
+      return;
+    }
+    $("warningsText").textContent = "Applied safety locks / notes:";
+    warnings.forEach(w=>{
+      const li = document.createElement("li");
+      li.textContent = w;
+      list.appendChild(li);
+    });
+  }
+
+  // Presets
+  function applyPreset(name){
+    const d = defaults();
+    const cur = readState();
+    let s = { ...d, aspect: cur.aspect || "9:16" };
+
+    if(name === "clean"){
+      s.mode = "pass1";
+      s.focusDenim = false; s.focusTattoos = false; s.focusHat = false; s.focusBeard = false;
+      s.focusSkinEven = false; s.focusMuscles = false; s.focusSmile = false; s.focusTeeth = false;
+      s.notes = "";
+    }
+    if(name === "crisp"){
+      s.mode = "pass1";
+      s.focusDenim = true; s.focusTattoos = true; s.focusHat = true; s.focusBeard = true;
+      s.focusEyes = true; s.focusBackground = true;
+      s.focusSkinEven = false; s.focusMuscles = false;
+      s.notes = "";
+    }
+    if(name === "fast"){
+      s.mode = "single";
+      s.focusDenim = true; s.focusTattoos = true; s.focusHat = true; s.focusBeard = true;
+      s.focusEyes = true; s.focusBackground = true;
+      s.notes = "";
+    }
+    if(name === "headshot"){
+      s.mode = "headshot";
+      s.noCrop = false;
+      s.notes = "Keep entire hat visible.";
+    }
+
+    applyState(s);
+    build();
+    showToast("Preset applied.");
+  }
+
+  function applyState(s){
+    $("aspect").value = s.aspect ?? "9:16";
+    $("mode").value = s.mode ?? "pass1";
+    $("noCrop").checked = !!s.noCrop;
+    $("deepDOF").checked = !!s.deepDOF;
+    $("noRotate").checked = !!s.noRotate;
+
+    $("lockIdentity").checked = !!s.lockIdentity;
+    $("lockTeeth").checked = !!s.lockTeeth;
+    $("lockEyes").checked = !!s.lockEyes;
+    $("lockBeard").checked = !!s.lockBeard;
+    $("lockTattoos").checked = !!s.lockTattoos;
+    $("lockBody").checked = !!s.lockBody;
+    $("lockSkinPixels").checked = !!s.lockSkinPixels;
+    $("colorLock").checked = !!s.colorLock;
+
+    $("focusSmile").checked = !!s.focusSmile;
+    $("focusTeeth").checked = !!s.focusTeeth;
+    $("focusEyes").checked = !!s.focusEyes;
+    $("focusTattoos").checked = !!s.focusTattoos;
+    $("focusMuscles").checked = !!s.focusMuscles;
+    $("focusDenim").checked = !!s.focusDenim;
+    $("focusBeard").checked = !!s.focusBeard;
+    $("focusHat").checked = !!s.focusHat;
+    $("focusSkinEven").checked = !!s.focusSkinEven;
+    $("focusBackground").checked = !!s.focusBackground;
+
+    $("strengthSubtle").checked = (s.strength === "subtle");
+    $("strengthBalanced").checked = (s.strength === "balanced");
+    $("strengthStrong").checked = (s.strength === "strong");
+
+    $("whiteBG").checked = !!s.whiteBG;
+    $("noVignette").checked = !!s.noVignette;
+    $("minShadow").checked = !!s.minShadow;
+
+    $("notes").value = s.notes ?? "";
+  }
+
+  // Copy helpers for Pass 1 / Pass 2
+  function asPass1State(){
+    const cur = readState();
+    cur.mode = "pass1";
+    cur.noCrop = true;
+    cur.lockSkinPixels = false;
+    return cur;
+  }
+  function asPass2State(){
+    const cur = readState();
+    cur.mode = "pass2";
+    cur.noCrop = true;
+    cur.lockSkinPixels = true;
+    return cur;
+  }
+
+  // Fix prompts
+  const FIX_EYES =
+`Match eye color and brightness to the ORIGINAL source exactly (no hue/sat change). Enhance only iris texture/catchlights within existing tones. Do not brighten/whiten sclera. Keep everything else unchanged.`;
+  const FIX_TEETH =
+`Restore teeth to match the ORIGINAL source exactly (shape, spacing, edges, color). No whitening/straightening/reshaping. Keep everything else unchanged.`;
+  const FIX_SKIN =
+`Restore skin tone to match the ORIGINAL source exactly. Neutral white balance. Slightly reduce lifted skin midtones/highlights without changing texture. Keep everything else unchanged.`;
+
+  // Wire events
+  $("build").addEventListener("click", build);
+  $("copy").addEventListener("click", async ()=>{ if(!$("output").value.trim()) build(); await copyText($("output").value); });
+
+  $("copyPass1").addEventListener("click", async ()=>{
+    const s = asPass1State();
+    const result = buildPrompt(s);
+    await copyText(result.prompt);
+  });
+  $("copyPass2").addEventListener("click", async ()=>{
+    const s = asPass2State();
+    const result = buildPrompt(s);
+    await copyText(result.prompt);
+  });
+  $("copyBoth").addEventListener("click", async ()=>{
+    const p1 = buildPrompt(asPass1State()).prompt;
+    const p2 = buildPrompt(asPass2State()).prompt;
+    await copyText(["PASS 1:", p1, "", "PASS 2:", p2].join("\n"));
+  });
+
+  $("fixEyes").addEventListener("click", async ()=>copyText(FIX_EYES));
+  $("fixTeeth").addEventListener("click", async ()=>copyText(FIX_TEETH));
+  $("fixSkin").addEventListener("click", async ()=>copyText(FIX_SKIN));
+
+  $("clearSaved").addEventListener("click", ()=>{
+    clearSaved();
+    applyState(defaults());
+    build();
+    showToast("Saved cleared.");
+  });
+
+  $("presetClean").addEventListener("click", ()=>applyPreset("clean"));
+  $("presetCrisp").addEventListener("click", ()=>applyPreset("crisp"));
+  $("presetFast").addEventListener("click", ()=>applyPreset("fast"));
+  $("presetHeadshot").addEventListener("click", ()=>applyPreset("headshot"));
+
+  function clearSaved(){ try{ localStorage.removeItem(STORAGE_KEY); $("statusPill").textContent="Cleared"; }catch{ $("statusPill").textContent="Error"; } }
+  function saveState(s){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); $("statusPill").textContent="Saved"; }catch{ $("statusPill").textContent="Not Saved"; } }
+  function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return null; return JSON.parse(raw);}catch{return null;} }
+
+  // Auto build on change
+  const watchIds = [
+    "aspect","mode","notes","noCrop","deepDOF","noRotate",
+    "lockIdentity","lockTeeth","lockEyes","lockBeard","lockTattoos","lockBody","lockSkinPixels","colorLock",
+    "focusSmile","focusTeeth","focusEyes","focusTattoos","focusMuscles","focusDenim","focusBeard","focusHat","focusSkinEven","focusBackground",
+    "whiteBG","noVignette","minShadow",
+    "strengthSubtle","strengthBalanced","strengthStrong"
+  ];
+  watchIds.forEach(id => $(id).addEventListener("change", build));
+
+  // Init
+  (function init(){
+    const saved = loadState();
+    if(saved){
+      applyState({ ...defaults(), ...saved });
+      $("statusPill").textContent = "Loaded";
+    }else{
+      applyState(defaults());
+      $("statusPill").textContent = "Saved";
+    }
+    build();
+  })();
 </script>
 </body>
 </html>
